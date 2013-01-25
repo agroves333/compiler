@@ -1,0 +1,8 @@
+program test;
+
+var i : integer;
+i := 1;
+
+begin
+  write(i);
+end.
