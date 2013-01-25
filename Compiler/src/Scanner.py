@@ -4,6 +4,8 @@ Created on Jan 24, 2013
 @author: david
 '''
 
+import sys
+
 class Scanner(object):
 
     lexeme = ""
@@ -22,8 +24,17 @@ class Scanner(object):
         pass
     
     def openFile(self, fileName):
-        self.file = open(fileName, 'r')
-
+        try:
+            self.file = open(fileName, 'r')
+        except IOError:
+            sys.exit('Source file not found')
+            
+    def closeFile(self):
+        self.file.close()
+        
+    def hasNext(self):
+        return True
+    
     def getNextToken(self):
 
         while True:
@@ -75,7 +86,7 @@ class Scanner(object):
              
             print nextChar
 
-            self.file.close()
+
 
 
 
@@ -92,7 +103,8 @@ class Scanner(object):
      
 
      
-
+    #Private functions
+    
     def _scanLeftParen(self): pass
 
      
