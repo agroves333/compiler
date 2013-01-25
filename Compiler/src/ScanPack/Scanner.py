@@ -11,24 +11,33 @@ class Scanner():
     '''
     
 
-    def __init__(self, fileName):
+    def __init__(self):
         '''
         Constructor
         '''
-        self.fileName = fileName
         
-    def scan(self):
+    def openFile(self, fileName):
         '''
         Main function to begin scanning process
         '''  
         try:
-            file = open(self.fileName, 'r')          
+            file = open(fileName, 'r')          
                         
-            print "I am scanning " + repr(self.fileName) + " for Tokens"  
+            print "I am scanning " + repr(fileName) + " for Tokens"  
             
             file.close
         except IOError:
             print "File not found"    
 
+    def getToken(self):
+        '''
+        '''
         
+    def getLexeme(self):
+        '''
+        '''
+        
+    def getLineNumber(self):
+        '''
+        '''
         
