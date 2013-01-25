@@ -1,14 +1,8 @@
 '''
-
 Created on Jan 24, 2013
 
-
-
 @author: david
-
 '''
-
-
 
 class Scanner(object):
 
@@ -38,10 +32,9 @@ class Scanner(object):
 
             nextChar = self.file.read(1)
 
-             
-
+        
             #skip space
-
+            
             if(nextChar == " "):
 
                 self.col += 1
@@ -49,7 +42,6 @@ class Scanner(object):
                 continue
 
              
-
             if(nextChar == "\n"):
 
                 self.line += 1
@@ -59,22 +51,20 @@ class Scanner(object):
                 continue
 
              
-
             #START DISPATCHER
 
-            if(nextChar == "("): self.scanLeftParen()
+            if(nextChar == "("): self._scanLeftParen()
 
-            if(nextChar == ")"): self.scanRightParen()
+            if(nextChar == ")"): self._scanRightParen()
 
-            if(nextChar == ";"): self.scanSemicolon()
+            if(nextChar == ";"): self._scanSemicolon()
 
-            if(nextChar == ":"): self.scanColonOrAssignOp()
+            if(nextChar == ":"): self._scanColonOrAssignOp()
 
-            if(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123))): self.scanId()
+            if(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123))): self._scanId()
 
-            if(nextChar in map(chr, range(48, 58))): self.scanNumericLit()
+            if(nextChar in map(chr, range(48, 58))): self._scanNumericLit()
 
-             
 
             #break when EOF is reached
 
@@ -83,10 +73,7 @@ class Scanner(object):
             #END DISPATCHER
 
              
-
             print nextChar
-
-    
 
             self.file.close()
 
@@ -106,33 +93,33 @@ class Scanner(object):
 
      
 
-    def scanLeftParen(self): pass
+    def _scanLeftParen(self): pass
 
      
 
-    def scanRightParen(self): pass
+    def _scanRightParen(self): pass
 
      
 
-    def scanSemicolon(self): pass
+    def _scanSemicolon(self): pass
 
      
 
-    def scanColonOrAssignOp(self): pass
+    def _scanColonOrAssignOp(self): pass
 
      
 
-    def scanId(self): pass
+    def _scanId(self): pass
 
      
 
-    def scanNumericLit(self): pass
+    def _scanNumericLit(self): pass
 
      
 
-    def scanEOF(self): pass
+    def _scanEOF(self): pass
 
      
 
-    def scanError(self): pass
+    def _scanError(self): pass
 

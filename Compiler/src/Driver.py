@@ -4,7 +4,7 @@ Created on Jan 24, 2013
 @author: david
 '''
 import sys
-from ScanPack.Scanner import Scanner
+from Scanner import Scanner
 
 def main():
     fileName = sys.argv[1]
