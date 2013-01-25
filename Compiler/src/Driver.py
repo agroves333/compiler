@@ -7,11 +7,17 @@ import sys
 from ScanPack.Scanner import Scanner
 
 def main():
-    fileName = sys.argv[0]
+    fileName = sys.argv[1]
     
-    fileScanner = Scanner()
+    scanner = Scanner()
     
-    fileScanner.openFile(fileName)
+    scanner.openFile(fileName)
+    
+    while(scanner.hasNext()):
+        scanner.getToken()
+        scanner.getLineNumber()
+        scanner.getColumnNumber()
+        scanner.getLexeme()
     
 if __name__ == '__main__':
     main()
