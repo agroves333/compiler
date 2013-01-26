@@ -31,7 +31,8 @@ def main():
         lexeme = scanner.getLexeme() 
         
         #Write token info to output file
-        output = str(token) + " " + str(line) + " " + str(col) + " " + str(lexeme)    
+        output = str(token) + " " + str(line) + " " + str(col) + " " + str(lexeme) + "\n"
+        print output   
         outFile.write(output)
         
     scanner.closeFile()

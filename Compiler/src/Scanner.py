@@ -8,130 +8,144 @@ import sys
 
 class Scanner(object):
 
+    # Initialize vars
     lexeme = ""
-
     token = ""
-
     line = int(1)
-
     col = int(1)
-
     file = None
 
-     
-
+    # Constuctor 
     def __init__(self):
         pass
     
+    # Open the input file
     def openFile(self, fileName):
         try:
             self.file = open(fileName, 'r')
         except IOError:
-            sys.exit('Source file not found')
-            
+            sys.exit("Source file not found")
+    
+    # Close the input file        
     def closeFile(self):
         self.file.close()
-        
+    
+    # Check for more data in file    
     def hasNext(self):
-        return True
+        if not self.file.read(1):
+            return False
+        else:
+            self.file.seek(-1, 1)
+            return True
     
     def getNextToken(self):
 
-        while True:
+        nextChar = self.file.read(1)
+ 
+        #skip space        
+        if(nextChar == " "):
 
-            filePointer = self.file.tell()
+            self.col += 1
 
-            nextChar = self.file.read(1)
+            self.getNextToken()
 
+        #skip newline 
+        if(nextChar == "\n"):
+
+            self.line += 1
+
+            self.col = 0
+
+            self.getNextToken()
+
+         
+        #START DISPATCHER
+        if(nextChar == "."): self._scanPeriod()
         
-            #skip space
-            
-            if(nextChar == " "):
+        elif(nextChar == ","): self._scanComma()
+        
+        elif(nextChar == ";"): self._scanSemicolon()
+        
+        elif(nextChar == "("): self._scanLeftParen()
 
-                self.col += 1
+        elif(nextChar == ")"): self._scanRightParen()
 
-                continue
+        elif(nextChar == "="): self._scanEqual()
+        
+        elif(nextChar == "+"): self._scanPlus()
+        
+        elif(nextChar == "-"): self._scanMinus()
+        
+        elif(nextChar == "*"): self._scanTimes()
 
-             
-            if(nextChar == "\n"):
+        elif(nextChar == ":"): self._scanColonOrAssignOp()
 
-                self.line += 1
+        elif(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123))): self._scanId()
 
-                self.col = 0
-
-                continue
-
-             
-            #START DISPATCHER
-
-            if(nextChar == "("): self._scanLeftParen()
-
-            if(nextChar == ")"): self._scanRightParen()
-
-            if(nextChar == ";"): self._scanSemicolon()
-
-            if(nextChar == ":"): self._scanColonOrAssignOp()
-
-            if(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123))): self._scanId()
-
-            if(nextChar in map(chr, range(48, 58))): self._scanNumericLit()
+        elif(nextChar in map(chr, range(48, 58))): self._scanNumericLit()
+        
+        self.col += 1
+        
+        return self.token
 
 
-            #break when EOF is reached
-
-            if not nextChar: break
-
-            #END DISPATCHER
-
-             
-            print nextChar
-
-
-
-
-
-    def getLexeme(self): return self.lexeme
+    def getLexeme(self): 
+        return self.lexeme
 
      
-
-    def getLineNumber(self): return self.line
-
-     
-
-    def getColumnNumber(self): return self.col
+    def getLineNumber(self): 
+        return self.line
 
      
+    def getColumnNumber(self): 
+        return self.col
 
-     
+         
     #Private functions
+    def _scanPeriod(self):
+        self.token = "MP_PERIOD" 
+        self.lexeme = "."
+        
+    def _scanComma(self):
+        self.token = "MP_COMMA" 
+        self.lexeme = ","
+ 
+    def _scanSemicolon(self):
+        self.token = "MP_SCOLON" 
+        self.lexeme = ";"
+            
+    def _scanLeftParen(self):
+        self.token = "MP_LPAREN" 
+        self.lexeme = "("
+     
+    def _scanRightParen(self):
+        self.token = "MP_RPAREN" 
+        self.lexeme = ")"
+            
+    def _scanEqual(self):
+        self.token = "MP_EQUAL" 
+        self.lexeme = "="
+
+    def _scanPlus(self):
+        self.token = "MP_PLUS" 
+        self.lexeme = "+"
     
-    def _scanLeftParen(self): pass
-
-     
-
-    def _scanRightParen(self): pass
-
-     
-
-    def _scanSemicolon(self): pass
-
-     
-
+    def _scanMinus(self):
+        self.token = "MP_MINUS" 
+        self.lexeme = "-"
+        
+    def _scanTimes(self):
+        self.token = "MP_TIMES" 
+        self.lexeme = "*"
+        
+            
     def _scanColonOrAssignOp(self): pass
-
-     
-
+    
     def _scanId(self): pass
-
      
-
     def _scanNumericLit(self): pass
-
      
-
     def _scanEOF(self): pass
-
-     
 
     def _scanError(self): pass
 
