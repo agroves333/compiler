@@ -6,9 +6,17 @@ Created on Jan 24, 2013
 
 import sys
 from Scanner import Scanner
-  
-if __name__ == '__main__':
+
+def main():
+    fileName = sys.argv[1]
     
     scanner = Scanner()
-    scanner.getNextToken()
+    
+    scanner.openFile(fileName)
+    
+    while(scanner.hasNext()):
+        scanner.getToken()
+        scanner.getLineNumber()
+        scanner.getColumnNumber()
+        scanner.getLexeme()
     
