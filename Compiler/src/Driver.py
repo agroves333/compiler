@@ -3,6 +3,7 @@ Created on Jan 24, 2013
 
 @author: david
 '''
+
 import sys
 from Scanner import Scanner
 
@@ -19,7 +20,6 @@ def main():
     fileName = sys.argv[1]
     
     scanner = Scanner()
-    
     scanner.openFile(fileName)
     
     outFile = open('output.txt', 'w')
@@ -36,6 +36,7 @@ def main():
         outFile.write(output)
         
     scanner.closeFile()
-    
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     main()
