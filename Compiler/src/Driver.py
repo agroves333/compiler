@@ -17,10 +17,10 @@ def main():
 
     col = int(1)
     
-#    fileName = sys.argv[1]
+    fileName = sys.argv[1]
     
     scanner = Scanner()
-    scanner.openFile('program')
+    scanner.openFile(fileName)
     
     outFile = open('output.txt', 'w')
     
