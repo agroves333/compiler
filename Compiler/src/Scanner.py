@@ -194,8 +194,6 @@ class Scanner(object):
                     done = True
                     self.file.seek(-1, 1)
             elif (state == 2):
-                nextChar = self.file.read(1)
-                self.lexeme = self.lexeme + nextChar
                 self.token = 'MP_ASSIGN'
                 self.col += 2
                 done = True
