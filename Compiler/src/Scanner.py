@@ -5,7 +5,6 @@ Created on Jan 24, 2013
 '''
 
 import sys
-from fysom import Fysom
 
 class Scanner(object):
 
@@ -15,9 +14,11 @@ class Scanner(object):
     line = int(1)
     col = int(1)
     file = None
+    reserved = None
 
     # Constuctor 
     def __init__(self):
+        self._hashReserved()
         pass
     
     # Open the input file
@@ -33,15 +34,21 @@ class Scanner(object):
     
     # Check for more data in file    
     def hasNext(self):
-        if not self.file.read(1):
+        if (self.token == "MP_EOF"):
             return False
         else:
-            self.file.seek(-1, 1)
             return True
     
     def getNextToken(self):
+        self.token = ""
+        self.lexeme = ""
+        nextChar = ""
 
-        nextChar = self.file.read(1)
+        if not self.file.read(1):
+            self._scanEOF()
+        else:
+            self.file.seek(-1, 1)    
+            nextChar = self.file.read(1)
 
         #skip space        
         if(nextChar == " "):
@@ -58,11 +65,10 @@ class Scanner(object):
             self.col = 0
 
             self.getNextToken()
-        
-        #rewind file pointer so that following characters are not consumed by the dispatcher
-#        self.file.seek(-1, 1)
+            
          
         #START DISPATCHER
+        
         if(nextChar == "."): self._scanPeriod()
         
         elif(nextChar == ","): self._scanComma()
@@ -83,7 +89,8 @@ class Scanner(object):
 
         elif(nextChar == ":"): self._scanColonOrAssignOp()
 
-        elif(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123))): self._scanId()
+        elif(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123)) or
+             (nextChar == "_")): self._scanId()
 
         elif(nextChar in map(chr, range(48, 58))): self._scanNumericLit()
         
@@ -145,7 +152,6 @@ class Scanner(object):
     def _scanColonOrAssignOp(self):
         state = 0
         done = False
-        self.lexeme = ""
         self.file.seek(-1, 1)
         
         while not done:
@@ -169,13 +175,92 @@ class Scanner(object):
                 self.token = 'MP_ASSIGN'
                 done = True
 
-
-    
-    def _scanId(self): pass
+  
+    def _scanId(self): 
+        state = 0
+        done = False
+        self.file.seek(-1, 1)
+        
+        while not done:
+            if (state == 0):
+                nextChar = self.file.read(1)
+                if(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123))):
+                    state = 1
+                    self.lexeme = self.lexeme + nextChar
+                elif (nextChar == "_"):
+                    state = 2
+                    self.lexeme = self.lexeme + nextChar
+            if (state == 1):
+                nextChar = self.file.read(1)
+                if(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123))):
+                    state = 1
+                    self.lexeme = self.lexeme + nextChar
+                elif (nextChar == "_"):
+                    state = 2
+                    self.lexeme = self.lexeme + nextChar
+                elif (nextChar in map(chr, range(48, 58))):
+                    state = 1
+                    self.lexeme = self.lexeme + nextChar
+                else:
+                    done = True
+                    self.file.seek(-1, 1)
+                    # Check to see if identifier is a reserved word
+                    self._checkReserved()                  
+            if (state == 2):
+                nextChar = self.file.read(1)
+                if(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123))):
+                    state = 1
+                    self.lexeme = self.lexeme + nextChar
+                elif (nextChar in map(chr, range(48, 58))):
+                    state = 1
+                    self.lexeme = self.lexeme + nextChar
+                else:
+                    self._scanError()
+                    done = True
+                    self.file.seek(-1, 1)    
+                    
      
     def _scanNumericLit(self): pass
-     
-    def _scanEOF(self): pass
 
-    def _scanError(self): pass
+    def _scanError(self): 
+        self.token = "MP_ERROR"
+        
+    def _scanEOF(self):
+        self.token = "MP_EOF"
+    
+    def _checkReserved(self): 
+        try:
+            self.token = self.reserved[self.lexeme]
+        except KeyError:
+            self.token = "MP_IDENTIFIER"
+    
+    def _hashReserved(self):
+        # Hash reserved words in dictionary
+        self.reserved = {'and':'MP_AND',
+                    'begin':'MP_BEGIN',
+                    'div':'MP_DIV',
+                    'do':'MP_DO',
+                    'downto':'MP_DOWNTO',
+                    'else':'MP_ELSE',
+                    'end':'MP_END',
+                    'fixed':'MP_FIXED', 
+                    'float':'MP_FLOAT',
+                    'for':'MP_FOR',
+                    'function':'MP_FUNCTION',
+                    'if':'MP_IF',
+                    'integer':'MP_INTEGER',
+                    'mod':'MP_MOD',
+                    'not':'MP_NOT',
+                    'or':'MP_OR',
+                    'procedure':'MP_PROCEDURE',
+                    'program':'MP_PROGRAM',
+                    'read':'MP_READ',
+                    'repeat':'MP_REPEAT',
+                    'then':'MP_THEN',
+                    'to':'MP_TO',
+                    'until':'MP_UNTIL',
+                    'var':'MP_VAR',
+                    'while':'MP_WHILE',
+                    'write':'MP_WRITE'}
+
 

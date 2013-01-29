@@ -9,12 +9,10 @@ from Scanner import Scanner
 
 def main():
     
+    # Define vars
     lexeme = ""
-
     token = ""
-
     line = int(1)
-
     col = int(1)
     
     fileName = sys.argv[1]
@@ -24,7 +22,7 @@ def main():
     
     outFile = open('output.txt', 'w')
     
-    while(scanner.hasNext()):
+    while True:
         token = scanner.getNextToken()
         line = scanner.getLineNumber()
         col = scanner.getColumnNumber()
@@ -34,6 +32,9 @@ def main():
         output = str(token) + " " + str(line) + " " + str(col) + " " + str(lexeme) + "\n"
         print output   
         outFile.write(output)
+        
+        if not scanner.hasNext():
+            break
         
     scanner.closeFile()
 
