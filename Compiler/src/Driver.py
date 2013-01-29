@@ -8,19 +8,6 @@ import sys
 from Scanner import Scanner
 
 def main():
-<<<<<<< HEAD
-    fileName = sys.argv[1]
-    
-    scanner = Scanner()
-    
-    scanner.openFile(fileName)
-    
-    while(scanner.hasNext()):
-        scanner.getToken()
-        scanner.getLineNumber()
-        scanner.getColumnNumber()
-        scanner.getLexeme()
-=======
     
     lexeme = ""
 
@@ -30,11 +17,10 @@ def main():
 
     col = int(1)
     
-    fileName = sys.argv[1]
+#    fileName = sys.argv[1]
     
     scanner = Scanner()
-    
-    scanner.openFile(fileName)
+    scanner.openFile('program')
     
     outFile = open('output.txt', 'w')
     
@@ -50,5 +36,7 @@ def main():
         outFile.write(output)
         
     scanner.closeFile()
->>>>>>> b66adfcae2d4449d6d1a5cfd211d69389fd36f9a
-    
+
+
+if __name__ == "__main__":
+    main()

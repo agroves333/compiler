@@ -5,6 +5,7 @@ Created on Jan 24, 2013
 '''
 
 import sys
+from fysom import Fysom
 
 class Scanner(object):
 
@@ -41,7 +42,7 @@ class Scanner(object):
     def getNextToken(self):
 
         nextChar = self.file.read(1)
- 
+
         #skip space        
         if(nextChar == " "):
 
@@ -57,7 +58,9 @@ class Scanner(object):
             self.col = 0
 
             self.getNextToken()
-
+        
+        #rewind file pointer so that following characters are not consumed by the dispatcher
+#        self.file.seek(-1, 1)
          
         #START DISPATCHER
         if(nextChar == "."): self._scanPeriod()
@@ -139,7 +142,34 @@ class Scanner(object):
         self.lexeme = "*"
         
             
-    def _scanColonOrAssignOp(self): pass
+    def _scanColonOrAssignOp(self):
+        state = 0
+        done = False
+        self.lexeme = ""
+        self.file.seek(-1, 1)
+        
+        while not done:
+            if (state == 0):
+                nextChar = self.file.read(1)
+                if(nextChar == ":"):
+                    state = 1
+                    self.lexeme = self.lexeme + nextChar
+            elif (state == 1):
+                nextChar = self.file.read(1)
+                if(nextChar == "="):
+                    state = 2
+                    self.lexeme = self.lexeme + nextChar
+                else:
+                    self.token = 'MP_COLON'
+                    done = True
+                    self.file.seek(-1, 1)
+            elif (state == 2):
+                nextChar = self.file.read(1)
+                self.lexeme = self.lexeme + nextChar
+                self.token = 'MP_ASSIGN'
+                done = True
+
+
     
     def _scanId(self): pass
      
