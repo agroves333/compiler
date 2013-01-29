@@ -5,21 +5,21 @@ Created on Jan 24, 2013
 '''
 
 import sys
+#from fysom import Fysom
 
 class Scanner(object):
 
     # Initialize vars
     lexeme = ""
     token = ""
-    line = int(1)
-    col = int(1)
+    line = 1
+    col = 0 # hasn't read in a char yet
     file = None
     reserved = None
 
-    # Constuctor 
+    # Constuctor
     def __init__(self):
         self._hashReserved()
-        pass
     
     # Open the input file
     def openFile(self, fileName):
@@ -45,59 +45,64 @@ class Scanner(object):
         nextChar = ""
 
         if not self.file.read(1):
-            self._scanEOF()
+            self.token = "MP_EOF"
         else:
-            self.file.seek(-1, 1)    
+            self.file.seek(-1, 1) 
+        
+            self._discard_whitespace()
+      
             nextChar = self.file.read(1)
-
-        #skip space        
-        if(nextChar == " "):
-
-            self.col += 1
-
-            self.getNextToken()
-
-        #skip newline 
-        if(nextChar == "\n"):
-
-            self.line += 1
-
-            self.col = 0
-
-            self.getNextToken()
-            
+            self.file.seek(-1, 1)
          
-        #START DISPATCHER
+            #BEGINNING OF DISPATCHER
+            if(nextChar == "."): self._scanPeriod()
         
-        if(nextChar == "."): self._scanPeriod()
+            elif(nextChar == ","): self._scanComma()
         
-        elif(nextChar == ","): self._scanComma()
+            elif(nextChar == ";"): self._scanSemicolon()
         
-        elif(nextChar == ";"): self._scanSemicolon()
-        
-        elif(nextChar == "("): self._scanLeftParen()
+            elif(nextChar == "("): self._scanLeftParen()
 
-        elif(nextChar == ")"): self._scanRightParen()
+            elif(nextChar == ")"): self._scanRightParen()
 
-        elif(nextChar == "="): self._scanEqual()
+            elif(nextChar == "="): self._scanEqual()
         
-        elif(nextChar == "+"): self._scanPlus()
+            elif(nextChar == "+"): self._scanPlus()
         
-        elif(nextChar == "-"): self._scanMinus()
+            elif(nextChar == "-"): self._scanMinus()
         
-        elif(nextChar == "*"): self._scanTimes()
+            elif(nextChar == "*"): self._scanTimes()
 
-        elif(nextChar == ":"): self._scanColonOrAssignOp()
+            elif(nextChar == ":"): self._scanColonOrAssignOp()
 
-        elif(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123)) or
-             (nextChar == "_")): self._scanId()
+            elif(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123)) or
+                 (nextChar == "_")): self._scanId()
 
-        elif(nextChar in map(chr, range(48, 58))): self._scanNumericLit()
-        
-        self.col += 1
+            #elif(nextChar in map(chr, range(48, 58))): self._scanNumericLit()
+
+            else:
+                self.token = "Not Done"
+                self.col += 1
+                self.lexeme= nextChar
+                self.file.read(1)
         
         return self.token
 
+    def _discard_whitespace(self):
+
+        nextChar = self.file.read(1)
+
+        while(nextChar == ' ' or nextChar == '\n'):
+            if(nextChar == " "):
+                self.col += 1
+
+            elif(nextChar == "\n"):
+                self.line += 1
+                self.col = 0
+            nextChar = self.file.read(1)
+
+        #rewind file pointer
+        self.file.seek(-1, 1)
 
     def getLexeme(self): 
         return self.lexeme
@@ -115,45 +120,63 @@ class Scanner(object):
     def _scanPeriod(self):
         self.token = "MP_PERIOD" 
         self.lexeme = "."
+        self.col += 1
+        self.file.read(1)
         
     def _scanComma(self):
         self.token = "MP_COMMA" 
         self.lexeme = ","
+        self.col += 1
+        self.file.read(1)
  
     def _scanSemicolon(self):
         self.token = "MP_SCOLON" 
         self.lexeme = ";"
+        self.col += 1
+        self.file.read(1)
             
     def _scanLeftParen(self):
         self.token = "MP_LPAREN" 
         self.lexeme = "("
+        self.col += 1
+        self.file.read(1)
      
     def _scanRightParen(self):
         self.token = "MP_RPAREN" 
         self.lexeme = ")"
+        self.col += 1
+        self.file.read(1)
             
     def _scanEqual(self):
         self.token = "MP_EQUAL" 
         self.lexeme = "="
+        self.col += 1
+        self.file.read(1)
 
     def _scanPlus(self):
         self.token = "MP_PLUS" 
         self.lexeme = "+"
+        self.col += 1
+        self.file.read(1)
     
     def _scanMinus(self):
         self.token = "MP_MINUS" 
         self.lexeme = "-"
+        self.col += 1
+        self.file.read(1)
         
     def _scanTimes(self):
         self.token = "MP_TIMES" 
         self.lexeme = "*"
+        self.col += 1
+        self.file.read(1)
         
             
     def _scanColonOrAssignOp(self):
         state = 0
         done = False
-        self.file.seek(-1, 1)
-        
+        self.lexeme = ""
+
         while not done:
             if (state == 0):
                 nextChar = self.file.read(1)
@@ -167,19 +190,20 @@ class Scanner(object):
                     self.lexeme = self.lexeme + nextChar
                 else:
                     self.token = 'MP_COLON'
+                    self.col += 1
                     done = True
                     self.file.seek(-1, 1)
             elif (state == 2):
                 nextChar = self.file.read(1)
                 self.lexeme = self.lexeme + nextChar
                 self.token = 'MP_ASSIGN'
+                self.col += 2
                 done = True
 
   
     def _scanId(self): 
         state = 0
         done = False
-        self.file.seek(-1, 1)
         
         while not done:
             if (state == 0):
@@ -224,9 +248,6 @@ class Scanner(object):
 
     def _scanError(self): 
         self.token = "MP_ERROR"
-        
-    def _scanEOF(self):
-        self.token = "MP_EOF"
     
     def _checkReserved(self): 
         try:
