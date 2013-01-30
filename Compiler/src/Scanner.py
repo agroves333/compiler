@@ -447,7 +447,7 @@ class Scanner(object):
     
     def _checkReserved(self): 
         try:
-            self.token = self.reserved[self.lexeme]
+            self.token = self.reserved[self.lexeme.lower()]
         except KeyError:
             self.token = "MP_IDENTIFIER"
     
