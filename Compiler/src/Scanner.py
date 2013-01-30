@@ -5,7 +5,6 @@ Created on Jan 24, 2013
 '''
 
 import sys
-#from fysom import Fysom
 
 class Scanner(object):
 
@@ -46,12 +45,15 @@ class Scanner(object):
 
         if not self.file.read(1):
             self.token = "MP_EOF"
+
         else:
+            
             self.file.seek(-1, 1) 
         
             self._discard_whitespace()
       
             nextChar = self.file.read(1)
+            
             self.file.seek(-1, 1)
          
             #BEGINNING OF DISPATCHER
@@ -78,9 +80,11 @@ class Scanner(object):
             elif(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123)) or
                  (nextChar == "_")): self._scanId()
 
-            #elif(nextChar in map(chr, range(48, 58))): self._scanNumericLit()
+            elif(nextChar in map(chr, range(48, 58))): self._scanNumericLit()
 
-            else:
+            elif(nextChar == "\n"): self._scanNewLine()
+                
+            else: 
                 self.token = "Not Done"
                 self.col += 1
                 self.lexeme= nextChar
@@ -92,13 +96,14 @@ class Scanner(object):
 
         nextChar = self.file.read(1)
 
-        while(nextChar == ' ' or nextChar == '\n'):
+        while(nextChar in [" ", "\n"]):
             if(nextChar == " "):
                 self.col += 1
 
             elif(nextChar == "\n"):
                 self.line += 1
                 self.col = 0
+            
             nextChar = self.file.read(1)
 
         #rewind file pointer
@@ -117,6 +122,11 @@ class Scanner(object):
 
          
     #Private functions
+    def _scanNewLine(self):
+        self.line += 1
+        self.col = 0
+        self.file.read(1)
+     
     def _scanPeriod(self):
         self.token = "MP_PERIOD" 
         self.lexeme = "."
@@ -225,7 +235,8 @@ class Scanner(object):
                     self.lexeme = self.lexeme + nextChar
                 else:
                     done = True
-                    self.file.seek(-1, 1)
+                    if nextChar:
+                        self.file.seek(-1,1)
                     # Check to see if identifier is a reserved word
                     self._checkReserved()                  
             if (state == 2):
@@ -242,7 +253,117 @@ class Scanner(object):
                     self.file.seek(-1, 1)    
                     
      
-    def _scanNumericLit(self): pass
+    def _scanNumericLit(self): 
+        state = 0
+        done = False
+        self.lexeme = ""
+        
+        while not done:
+            if (state == 0):
+                nextChar = self.file.read(1)
+                if (nextChar in map(chr, range(48, 58))):           # if nextChar is digit
+                    state = 1
+                    self.lexeme += nextChar
+                    
+            if (state == 1):
+                nextChar = self.file.read(1)
+                if (nextChar in map(chr, range(48, 58))):
+                    state = 1
+                    self.lexeme += nextChar
+                elif (nextChar == "."):                             # if "." don't append to lememe until digit is read in state 2
+                    state = 2
+                elif (nextChar in ["e", "E"]):                      # if "e" or "E" don't append to lexeme until digit is read in state 4
+                    state = 4
+                    
+                else:
+                    if nextChar:                                    # check if nextChar exist, if not, then the file pointer isn't rewound.
+                        self.file.seek(-1, 1)                       #    this ensures that the MP_EOF token is passed (getNextToken fails).
+                    self.token = 'MP_INTEGER_LIT'                   #    the same check happens on all other state's else clause (other char)
+                    done = True
+                    
+            if (state == 2):
+                nextChar = self.file.read(1)
+                if (nextChar in map(chr, range(48, 58))):
+                    state = 3
+                    self.lexeme = self.lexeme + "." + nextChar      # if digit, then append "." and digit. This prevents the "." from appending
+                else:                                               #    when nextChar isn't a digit which would return MP_INTEGER_LIT but with 
+                    if nextChar:                                    #    the lexeme including the "." on the end. 
+                        self.file.seek(-2, 1)
+                    else: 
+                        self.file.seek(-1, 1)
+                    self.token = 'MP_INTEGER_LIT'
+                    done = True
+                    
+            if (state == 3):
+                nextChar = self.file.read(1)
+                if (nextChar in map(chr, range(48, 58))):
+                    state = 3
+                    self.lexeme += nextChar
+                elif (nextChar in ["e", "E"]):                      # if "e" or "E" don't append to lexeme until digit is read in state 4
+                    state = 4
+                else:
+                    if nextChar:
+                        self.file.seek(-1, 1)
+                    self.token = 'MP_FIXED_LIT'
+                    done = True
+                    
+            if (state == 4):
+                nextChar = self.file.read(1)
+                if (nextChar in ['+', '-']):                        # if "+/-" , don't append to lexeme until digit is read in state 5
+                    state = 5
+                elif (nextChar in map(chr, range(48, 58))):         # if digit is read, append "e" or "E" to the lexeme depending on what was read
+                    state = 6                                       #    to get to state 4 (rewind file pointer by 2). This is possible b/c the only way
+                    self.file.seek(-2, 1)                           #    to get to state 4 is by reading an "e" or "E"
+                    e = self.file.read(1)
+                    self.lexeme = self.lexeme + e + nextChar
+                    self.file.seek(1, 1)
+                else:
+                    if nextChar:
+                        self.file.seek(-2, 1)
+                    else:
+                        self.file.seek(-1, 1)
+                        
+                    self.token = 'MP_FIXED_LIT'
+                    done = True
+                    
+                    
+            if (state == 5):
+                nextChar = self.file.read(1)
+                if (nextChar in map(chr, range(48, 58))):               # If digit is read, append "e" or "E" to the lexeme depending on what was read
+                    state = 6                                           #   along with appending the "+/-" to the lemexe. 
+                    self.file.seek(-2, 1)                               # Get the sign which is ensured to be the previous char since the only way to 
+                    sign = self.file.read(1)                            #   get to state 5 is by reading a "+/-"
+                    if (sign in ["e", "E"]):                            # If "e/E" is read as the sign, no polarity is being used so append "e/E", and 
+                        self.lexeme = self.lexeme + sign + nextChar     #    the digit read to the lexeme
+                    elif(sign in ["+", "-"]):                           # Else if "+/-" is read as sign, then append "+/-" , "e/E" and digit to lexeme
+                        self.file.seek(-2, 1)
+                        e = self.file.read(1)
+                        self.lexeme = self.lexeme + e + sign + nextChar
+                        self.file.seek(1, 1)
+                        
+                    self.file.seek(1, 1)
+                else:
+                    if nextChar:
+                        self.file.seek(-3, 1)
+                    else:
+                        self.file.seek(-2, 1)
+                            
+                    self.token = 'MP_FIXED_LIT'
+                    done = True
+                    
+            if (state == 6):
+                nextChar = self.file.read(1)
+                if (nextChar in map(chr, range(48, 58))):
+                    state = 6
+                    self.lexeme += nextChar
+                else:
+                    if nextChar:
+                        self.file.seek(-1, 1)
+                    self.token = 'MP_FLOAT_LIT'
+                    done = True
+                
+                
+                
 
     def _scanError(self): 
         self.token = "MP_ERROR"
