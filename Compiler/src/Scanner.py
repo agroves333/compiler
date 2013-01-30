@@ -45,18 +45,13 @@ class Scanner(object):
 
         #skip space        
         if(nextChar == " "):
-
             self.col += 1
-
             self.getNextToken()
 
         #skip newline 
         if(nextChar == "\n"):
-
             self.line += 1
-
-            self.col = 0
-
+            self.col = 1
             self.getNextToken()
         
         #rewind file pointer so that following characters are not consumed by the dispatcher
@@ -87,9 +82,10 @@ class Scanner(object):
 
         elif(nextChar in map(chr, range(48, 58))): self._scanNumericLit()
         
-        self.col += 1
         
         return self.token
+
+    
 
 
     def getLexeme(self): 
@@ -147,25 +143,26 @@ class Scanner(object):
         done = False
         self.lexeme = ""
         self.file.seek(-1, 1)
+
         
         while not done:
             if (state == 0):
                 nextChar = self.file.read(1)
                 if(nextChar == ":"):
                     state = 1
-                    self.lexeme = self.lexeme + nextChar
+                    self.lexeme += nextChar
             elif (state == 1):
                 nextChar = self.file.read(1)
                 if(nextChar == "="):
                     state = 2
-                    self.lexeme = self.lexeme + nextChar
+                    self.lexeme += nextChar
                 else:
                     self.token = 'MP_COLON'
                     done = True
                     self.file.seek(-1, 1)
             elif (state == 2):
                 nextChar = self.file.read(1)
-                self.lexeme = self.lexeme + nextChar
+                self.lexeme += nextChar
                 self.token = 'MP_ASSIGN'
                 done = True
 
