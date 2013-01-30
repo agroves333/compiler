@@ -78,6 +78,8 @@ class Scanner(object):
             elif(nextChar == ">"): self._scanGthanOrGequal()
             
             elif(nextChar == "<"): self._scanLthanOrLequalorNequal()
+            
+            elif(nextChar == "{"): self._scanComment()
 
             elif(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123)) or
                  (nextChar == "_")): self._scanId()
@@ -305,6 +307,20 @@ class Scanner(object):
                     
      
     def _scanNumericLit(self): pass
+    
+    def _scanComment(self):
+        self.lexeme = ""
+        nextChar = self.file.read(1)
+        
+        while not (nextChar == "}"):
+            if not self.file.read(1):
+                self.token = "MP_RUN_COMMENT"
+                return
+            else:
+                self.file.seek(-1, 1)
+                nextChar = self.file.read(1)
+                
+        self.getNextToken()
 
     def _scanError(self): 
         self.token = "MP_ERROR"
