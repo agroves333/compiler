@@ -74,6 +74,10 @@ class Scanner(object):
             elif(nextChar == "*"): self._scanTimes()
 
             elif(nextChar == ":"): self._scanColonOrAssignOp()
+            
+            elif(nextChar == ">"): self._scanGthanOrGequal()
+            
+            elif(nextChar == "<"): self._scanLthanOrLequalorNequal()
 
             elif(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123)) or
                  (nextChar == "_")): self._scanId()
@@ -198,6 +202,64 @@ class Scanner(object):
                 self.col += 1
                 done = True
 
+    def _scanGthanOrGequal(self):
+        state = 0
+        done = False
+        self.lexeme = ""
+
+        while not done:
+            if (state == 0):
+                nextChar = self.file.read(1)
+                if(nextChar == ">"):
+                    state = 1
+                    self.lexeme = self.lexeme + nextChar
+            elif (state == 1):
+                nextChar = self.file.read(1)
+                if(nextChar == "="):
+                    state = 2
+                    self.lexeme = self.lexeme + nextChar
+                else:
+                    self.token = 'MP_GTHAN'
+                    self.col += 1
+                    done = True
+                    self.file.seek(-1, 1)
+            elif (state == 2):
+                self.token = 'MP_GEQUAL'
+                self.col += 1
+                done = True
+                
+    def _scanLthanOrLequalorNequal(self):
+        state = 0
+        done = False
+        self.lexeme = ""
+
+        while not done:
+            if (state == 0):
+                nextChar = self.file.read(1)
+                if(nextChar == "<"):
+                    state = 1
+                    self.lexeme = self.lexeme + nextChar
+            elif (state == 1):
+                nextChar = self.file.read(1)
+                if(nextChar == "="):
+                    state = 2
+                    self.lexeme = self.lexeme + nextChar
+                elif(nextChar == ">"):
+                    state = 3
+                    self.lexeme = self.lexeme + nextChar
+                else:
+                    self.token = 'MP_LTHAN'
+                    self.col += 1
+                    done = True
+                    self.file.seek(-1, 1)
+            elif (state == 2):
+                self.token = 'MP_LEQUAL'
+                self.col += 1
+                done = True
+            elif (state == 3):
+                self.token = 'MP_NEQUAL'
+                self.col += 1
+                done = True
   
     def _scanId(self): 
         state = 0
