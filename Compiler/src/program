@@ -6,9 +6,9 @@ i := 1;
 'best bad string
 { comment }
 
-6 7.2 7.3E10
+6 75345.234 7.3E10 987.45e-465
 
-? _x
+? _x _x_ x_?
 
 begin
   write(i);

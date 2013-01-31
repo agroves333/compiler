@@ -79,7 +79,7 @@ class Scanner(object):
 
             elif(nextChar == "'"): self._scanString()
 
-            elif(self._isLetter(nextChar)): self._scanId()
+            elif(self._isLetter(nextChar) or (nextChar == "_")): self._scanId()
 
             elif(self._isDigit(nextChar)): self._scanNumericLit()
                 
@@ -269,6 +269,9 @@ class Scanner(object):
                 nextChar = self.file.read(1)
                 if(self._isLetter(nextChar)):
                     state = 1
+                    self.lexeme = self.lexeme + nextChar
+                elif (nextChar == "_"):
+                    state = 2
                     self.lexeme = self.lexeme + nextChar
             if (state == 1):
                 nextChar = self.file.read(1)
