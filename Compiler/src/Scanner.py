@@ -1,9 +1,3 @@
-'''
-Created on Jan 24, 2013
-
-@author: david
-'''
-
 import sys
 
 class Scanner(object):
@@ -83,12 +77,12 @@ class Scanner(object):
             
             elif(nextChar == "{"): self._scanComment()
 
+            elif(nextChar == "'"): self._scanString()
+
             elif(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123)) or
                  (nextChar == "_")): self._scanId()
 
             elif(nextChar in map(chr, range(48, 58))): self._scanNumericLit()
-
-            elif(nextChar == "\n"): self._scanNewLine()
                 
             else: 
                 self.token = "Not Done"
@@ -118,7 +112,7 @@ class Scanner(object):
     def getLexeme(self): 
         return self.lexeme
 
-     
+
     def getLineNumber(self): 
         return self.line
 
@@ -128,10 +122,6 @@ class Scanner(object):
 
          
     #Private functions
-    def _scanNewLine(self):
-        self.line += 1
-        self.col = 0
-        self.file.read(1)
      
     def _scanPeriod(self):
         self.token = "MP_PERIOD" 
@@ -389,8 +379,7 @@ class Scanner(object):
                         
                     self.token = 'MP_FIXED_LIT'
                     done = True
-                    
-                    
+
             if (state == 5):
                 nextChar = self.file.read(1)
                 if (nextChar in map(chr, range(48, 58))):               # If digit is read, append "e" or "E" to the lexeme depending on what was read
@@ -426,7 +415,31 @@ class Scanner(object):
                     self.token = 'MP_FLOAT_LIT'
                     done = True
                 
-                
+    def _scanString(self):
+        state = 0
+        done = False
+        self.lexeme = ""
+        self.file.read(1) #discard first char, which is '
+
+        while not done:
+            if state == 0:
+                nextChar = self.file.read(1)
+                if nextChar == "\n":
+                    self.token = "MP_RUN_STRING"
+                    done = True
+                elif nextChar == "'":
+                    state = 1
+                else:
+                    self.lexeme += nextChar
+            if state == 1:
+                nextChar = self.file.read(1)
+                if nextChar == "'":
+                    self.lexeme += nextChar
+                    state = 0
+                else:
+                    self.token = "MP_STRING_LIT"
+                    self.file.seek(-1, 1)
+                    done = True
     
     def _scanComment(self):
         self.lexeme = ""

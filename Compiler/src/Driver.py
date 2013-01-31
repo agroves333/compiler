@@ -30,7 +30,7 @@ def main():
         
         #Write token info to output file
         if(token != ""):
-            output = str(token) + " " + str(line) + " " + str(col) + " " + str(lexeme) + "\n"
+            output = '{0:16s} {1:4d} {2:4d} {3:15s}'.format(token, line, col, "   " + str(lexeme)) + "\n"
             print output
             outFile.write(output)
         
