@@ -79,9 +79,9 @@ class Scanner(object):
 
             elif(nextChar == "'"): self._scanString()
 
-            elif(nextChar in self.letters): self._scanId()
+            elif(self._isLetter(nextChar)): self._scanId()
 
-            elif(nextChar in self._digits): self._scanNumericLit()
+            elif(self._isDigit(nextChar)): self._scanNumericLit()
                 
             else:
                 self._scanError()
@@ -91,42 +91,34 @@ class Scanner(object):
         
         return self.token
 
-    def _discard_whitespace(self):
-
-        nextChar = self.file.read(1)
-
-        while(nextChar in [" ", "\n"]):
-            if(nextChar == " "):
-                self.col += 1
-
-            elif(nextChar == "\n"):
-                self.line += 1
-                self.col = 0
-            
-            nextChar = self.file.read(1)
-
-        #rewind file pointer
-        self.file.seek(-1, 1)
-
-    def _letters(self):
-        return map(chr, range(65, 91)) + map(chr, range(97, 123))
-
-    def _digits(self):
-        return map(chr, range(48, 58))
-
     def getLexeme(self):
         return self.lexeme
 
-
     def getLineNumber(self):
         return self.line
-
 
     def getColumnNumber(self):
         return self.col
 
 
     #Private functions
+
+    def _discard_whitespace(self):
+        nextChar = self.file.read(1)
+        while(nextChar in [" ", "\n"]):
+            if(nextChar == " "):
+                self.col += 1
+            elif(nextChar == "\n"):
+                self.line += 1
+                self.col = 0
+            nextChar = self.file.read(1)
+        self.file.seek(-1, 1)
+
+    def _isLetter(self, nextChar):
+        return nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123))
+
+    def _isDigit(self, nextChar):
+        return nextChar in map(chr, range(48, 58))
 
     def _scanPeriod(self):
         self.token = "MP_PERIOD"
@@ -275,18 +267,18 @@ class Scanner(object):
         while not done:
             if (state == 0):
                 nextChar = self.file.read(1)
-                if(nextChar in self._letters):
+                if(self._isLetter(nextChar)):
                     state = 1
                     self.lexeme = self.lexeme + nextChar
             if (state == 1):
                 nextChar = self.file.read(1)
-                if(nextChar in self._letters):
+                if(self._isLetter(nextChar)):
                     state = 1
                     self.lexeme = self.lexeme + nextChar
                 elif (nextChar == "_"):
                     state = 2
                     self.lexeme = self.lexeme + nextChar
-                elif (nextChar in self._digits):
+                elif (self._isDigit(nextChar)):
                     state = 1
                     self.lexeme = self.lexeme + nextChar
                 else:
@@ -297,10 +289,10 @@ class Scanner(object):
                     self._checkReserved()                  
             if (state == 2):
                 nextChar = self.file.read(1)
-                if(nextChar in self._letters):
+                if(self._isLetter(nextChar)):
                     state = 1
                     self.lexeme = self.lexeme + nextChar
-                elif (nextChar in self._digits):
+                elif (self._isDigit(nextChar)):
                     state = 1
                     self.lexeme = self.lexeme + nextChar
                 else:
@@ -317,13 +309,13 @@ class Scanner(object):
         while not done:
             if (state == 0):
                 nextChar = self.file.read(1)
-                if (nextChar in self._digits):           # if nextChar is digit
+                if (self._isDigit(nextChar)):           # if nextChar is digit
                     state = 1
                     self.lexeme += nextChar
                     
             if (state == 1):
                 nextChar = self.file.read(1)
-                if (nextChar in self._digits):
+                if (self._isDigit(nextChar)):
                     state = 1
                     self.lexeme += nextChar
                 elif (nextChar == "."):                             # if "." don't append to lememe until digit is read in state 2
@@ -339,7 +331,7 @@ class Scanner(object):
                     
             if (state == 2):
                 nextChar = self.file.read(1)
-                if (nextChar in self._digits):
+                if (self._isDigit(nextChar)):
                     state = 3
                     self.lexeme = self.lexeme + "." + nextChar      # if digit, then append "." and digit. This prevents the "." from appending
                 else:                                               #    when nextChar isn't a digit which would return MP_INTEGER_LIT but with 
@@ -352,7 +344,7 @@ class Scanner(object):
                     
             if (state == 3):
                 nextChar = self.file.read(1)
-                if (nextChar in self._digits):
+                if (self._isDigit(nextChar)):
                     state = 3
                     self.lexeme += nextChar
                 elif (nextChar in ["e", "E"]):                      # if "e" or "E" don't append to lexeme until digit is read in state 4
@@ -367,7 +359,7 @@ class Scanner(object):
                 nextChar = self.file.read(1)
                 if (nextChar in ['+', '-']):                        # if "+/-" , don't append to lexeme until digit is read in state 5
                     state = 5
-                elif (nextChar in self._digits):         # if digit is read, append "e" or "E" to the lexeme depending on what was read
+                elif (self._isDigit(nextChar)):         # if digit is read, append "e" or "E" to the lexeme depending on what was read
                     state = 6                                       #    to get to state 4 (rewind file pointer by 2). This is possible b/c the only way
                     self.file.seek(-2, 1)                           #    to get to state 4 is by reading an "e" or "E"
                     e = self.file.read(1)
@@ -384,7 +376,7 @@ class Scanner(object):
 
             if (state == 5):
                 nextChar = self.file.read(1)
-                if (nextChar in self._digits):               # If digit is read, append "e" or "E" to the lexeme depending on what was read
+                if (self._isDigit(nextChar)):               # If digit is read, append "e" or "E" to the lexeme depending on what was read
                     state = 6                                           #   along with appending the "+/-" to the lemexe. 
                     self.file.seek(-2, 1)                               # Get the sign which is ensured to be the previous char since the only way to 
                     sign = self.file.read(1)                            #   get to state 5 is by reading a "+/-"
@@ -408,7 +400,7 @@ class Scanner(object):
                     
             if (state == 6):
                 nextChar = self.file.read(1)
-                if (nextChar in self._digits):
+                if (self._isDigit(nextChar)):
                     state = 6
                     self.lexeme += nextChar
                 else:
