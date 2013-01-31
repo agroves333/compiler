@@ -79,13 +79,13 @@ class Scanner(object):
 
             elif(nextChar == "'"): self._scanString()
 
-            elif(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123)) or
-                 (nextChar == "_")): self._scanId()
+            elif (nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123))):
+                self._scanId()
 
             elif(nextChar in map(chr, range(48, 58))): self._scanNumericLit()
                 
-            else: 
-                self.token = "Not Done"
+            else:
+                self._scanError()
                 self.col += 1
                 self.lexeme= nextChar
                 self.file.read(1)
@@ -272,9 +272,6 @@ class Scanner(object):
                 nextChar = self.file.read(1)
                 if(nextChar in map(chr, range(65, 91)) + map(chr, range(97, 123))):
                     state = 1
-                    self.lexeme = self.lexeme + nextChar
-                elif (nextChar == "_"):
-                    state = 2
                     self.lexeme = self.lexeme + nextChar
             if (state == 1):
                 nextChar = self.file.read(1)

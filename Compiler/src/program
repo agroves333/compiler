@@ -4,6 +4,11 @@ var i : integer;
 i := 1;
 'test good '' string'
 'best bad string
+{ comment }
+
+6 7.2 7.3E10
+
+? _x
 
 begin
   write(i);
