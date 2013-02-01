@@ -86,7 +86,7 @@ class Scanner(object):
 
             elif(nextChar == "'"): self._scanString()
 
-            elif(nextChar in self._letters): self._scanId()
+            elif(nextChar in self._letters + ["_"]): self._scanId()
 
             elif(nextChar in self._digits): self._scanNumericLit()
                 
@@ -196,13 +196,13 @@ class Scanner(object):
                 self.col_internal += 1
                 if(nextChar == ":"):
                     state = 1
-                    self.lexeme = self.lexeme + nextChar
+                    self.lexeme += nextChar
             elif (state == 1):
                 nextChar = self.file.read(1)
                 self.col_internal += 1
                 if(nextChar == "="):
                     state = 2
-                    self.lexeme = self.lexeme + nextChar
+                    self.lexeme += nextChar
                 else:
                     self.token = 'MP_COLON'
                     done = True
@@ -223,13 +223,13 @@ class Scanner(object):
                 self.col_internal += 1
                 if(nextChar == ">"):
                     state = 1
-                    self.lexeme = self.lexeme + nextChar
+                    self.lexeme += nextChar
             elif (state == 1):
                 nextChar = self.file.read(1)
                 self.col_internal += 1
                 if(nextChar == "="):
                     state = 2
-                    self.lexeme = self.lexeme + nextChar
+                    self.lexeme += nextChar
                 else:
                     self.token = 'MP_GTHAN'
                     done = True
@@ -250,16 +250,16 @@ class Scanner(object):
                 self.col_internal += 1
                 if(nextChar == "<"):
                     state = 1
-                    self.lexeme = self.lexeme + nextChar
+                    self.lexeme += nextChar
             elif (state == 1):
                 nextChar = self.file.read(1)
                 self.col_internal += 1
                 if(nextChar == "="):
                     state = 2
-                    self.lexeme = self.lexeme + nextChar
+                    self.lexeme += nextChar
                 elif(nextChar == ">"):
                     state = 3
-                    self.lexeme = self.lexeme + nextChar
+                    self.lexeme += nextChar
                 else:
                     self.token = 'MP_LTHAN'
                     done = True
@@ -282,16 +282,16 @@ class Scanner(object):
                 self.col_internal += 1
                 if(nextChar in self._letters):
                     state = 1
-                    self.lexeme = self.lexeme + nextChar
+                    self.lexeme += nextChar
             if (state == 1):
                 nextChar = self.file.read(1)
                 self.col_internal += 1
                 if(nextChar in self._letters + self._digits):
                     state = 1
-                    self.lexeme = self.lexeme + nextChar
+                    self.lexeme += nextChar
                 elif (nextChar == "_"):
                     state = 2
-                    self.lexeme = self.lexeme + nextChar
+                    self.lexeme += nextChar
                 else:
                     done = True
                     if nextChar:
@@ -304,12 +304,12 @@ class Scanner(object):
                 self.col_internal += 1
                 if(nextChar in self._letters + self._digits):
                     state = 1
-                    self.lexeme = self.lexeme + nextChar
+                    self.lexeme += nextChar
                 else:
                     self._scanError()
                     done = True
                     self.file.seek(-1, 1)    
-                    
+                    self.col_internal -= 1
      
     def _scanNumericLit(self): 
         state = 0
@@ -378,10 +378,9 @@ class Scanner(object):
                 self.col_internal += 1
                 if (nextChar in ['+', '-']):                        # if "+/-" , don't append to lexeme until digit is read in state 5
                     state = 5
-                elif (nextChar in self._digits):         # if digit is read, append "e" or "E" to the lexeme depending on what was read
-                    state = 6                                       #    to get to state 4 (rewind file pointer by 2). This is possible b/c the only way
-                    self.file.seek(-2, 1)
-                    self.col_internal -= 2                           #    to get to state 4 is by reading an "e" or "E"
+                elif (nextChar in self._digits):          # if digit is read, append "e" or "E" to the lexeme depending on what was read
+                    state = 6                             #    to get to state 4 (rewind file pointer by 2). This is possible b/c the only way
+                    self.col_internal -= 2                #    to get to state 4 is by reading an "e" or "E"
                     e = self.file.read(1)
                     self.col_internal += 1
                     self.lexeme = self.lexeme + e + nextChar
@@ -401,12 +400,12 @@ class Scanner(object):
             if (state == 5):
                 nextChar = self.file.read(1)
                 self.col_internal += 1
-                if (nextChar in self._digits):               # If digit is read, append "e" or "E" to the lexeme depending on what was read
+                if (nextChar in self._digits):                          # If digit is read, append "e" or "E" to the lexeme depending on what was read
                     state = 6                                           #   along with appending the "+/-" to the lemexe. 
                     self.file.seek(-2, 1) 
                     self.col_internal -= 2                              # Get the sign which is ensured to be the previous char since the only way to 
                     sign = self.file.read(1) 
-                    self.col_internal += 1                           #   get to state 5 is by reading a "+/-"
+                    self.col_internal += 1                              #   get to state 5 is by reading a "+/-"
                     if (sign in ["e", "E"]):                            # If "e/E" is read as the sign, no polarity is being used so append "e/E", and 
                         self.lexeme = self.lexeme + sign + nextChar     #    the digit read to the lexeme
                     elif(sign in ["+", "-"]):                           # Else if "+/-" is read as sign, then append "+/-" , "e/E" and digit to lexeme

@@ -10,6 +10,8 @@ i := 1;
 
 ? _x _x_ x_?
 
+_good_ident84
+
 begin
   write(i);
 end.
