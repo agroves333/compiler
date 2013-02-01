@@ -81,7 +81,7 @@ class Scanner(object):
 
             elif(nextChar == "'"): self._scanString()
 
-            elif(nextChar in self.letters): self._scanId()
+            elif(nextChar in self._letters): self._scanId()
 
             elif(nextChar in self._digits): self._scanNumericLit()
                 
@@ -277,14 +277,11 @@ class Scanner(object):
                     self.lexeme = self.lexeme + nextChar
             if (state == 1):
                 nextChar = self.file.read(1)
-                if(nextChar in self._letters):
+                if(nextChar in self._letters + self._digits):
                     state = 1
                     self.lexeme = self.lexeme + nextChar
                 elif (nextChar == "_"):
                     state = 2
-                    self.lexeme = self.lexeme + nextChar
-                elif (nextChar in self._digits):
-                    state = 1
                     self.lexeme = self.lexeme + nextChar
                 else:
                     done = True
@@ -294,10 +291,7 @@ class Scanner(object):
                     self._checkReserved()                  
             if (state == 2):
                 nextChar = self.file.read(1)
-                if(nextChar in self._letters):
-                    state = 1
-                    self.lexeme = self.lexeme + nextChar
-                elif (nextChar in self._digits):
+                if(nextChar in self._letters + self._digits):
                     state = 1
                     self.lexeme = self.lexeme + nextChar
                 else:
