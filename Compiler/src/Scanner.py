@@ -9,10 +9,7 @@ class Scanner(object):
     col = 0 # hasn't read in a char yet
     file = None
     reserved = None
-    
-    
     _letters = map(chr, range(65, 91)) + map(chr, range(97, 123))
-
     _digits = map(chr, range(48, 58))
 
     # Constuctor
