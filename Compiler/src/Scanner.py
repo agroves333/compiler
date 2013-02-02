@@ -89,6 +89,8 @@ class Scanner(object):
             elif(nextChar in self._letters + ["_"]): self._scanId()
 
             elif(nextChar in self._digits): self._scanNumericLit()
+            
+            elif(nextChar == "\n"): self.token = "MP_EOF"
                 
             else:
                 self._scanError()
@@ -102,13 +104,13 @@ class Scanner(object):
 
         nextChar = self.file.read(1)
 
-        while(nextChar in [" ", "\n"]):
+        while(nextChar in [" ", "\n", "\r"]):
             if(nextChar == " "):
                 self.col_internal += 1
 
             elif(nextChar == "\n"):
                 self.line_internal += 1
-                self.col_internal = 0
+                self.col_internal = 1
             
             nextChar = self.file.read(1)
 
@@ -282,7 +284,17 @@ class Scanner(object):
                 self.col_internal += 1
                 if(nextChar in self._letters):
                     state = 1
-                    self.lexeme += nextChar
+                    self.lexeme += nextChar  
+                    
+                elif(nextChar == "_"):
+                    state = 2
+                    self.lexeme += nextChar                  
+                else:
+                    self._scanError()
+                    done = True
+                    self.lexeme += nextChar 
+                    self.file.seek(-1,1)
+                    self.col_internal -= 1
             if (state == 1):
                 nextChar = self.file.read(1)
                 self.col_internal += 1
@@ -308,7 +320,8 @@ class Scanner(object):
                 else:
                     self._scanError()
                     done = True
-                    self.file.seek(-1, 1)    
+                    self.lexeme += nextChar 
+                    self.file.seek(-1,1)
                     self.col_internal -= 1
      
     def _scanNumericLit(self): 

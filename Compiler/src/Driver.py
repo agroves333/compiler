@@ -32,7 +32,7 @@ def main():
         lexeme = scanner.getLexeme() 
         
         #Write token info to output file
-        if(token != ""):
+        if(token != ''):
             output = '{0:16s} {1:4d} {2:4d} {3:15s}'.format(token, line, col, "   " + str(lexeme)) + "\n"
             print output
             outFile.write(output)
