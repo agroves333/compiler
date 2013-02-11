@@ -1,0 +1,36 @@
+Token            Line Column Lexeme         
+--------------------------------------
+MP_PROGRAM          1    1    program     
+MP_IDENTIFIER       1    3    test        
+MP_SCOLON           1    4    ;           
+MP_VAR              3    1    var         
+MP_IDENTIFIER       3    3    i           
+MP_COLON            3    5    :           
+MP_INTEGER          3    7    integer     
+MP_SCOLON           3    8    ;           
+MP_IDENTIFIER       4    1    i           
+MP_ASSIGN           4    3    :=          
+MP_INTEGER_LIT      4    4    1           
+MP_SCOLON           4    5    ;           
+MP_STRING_LIT       5    0    test good ' string
+MP_RUN_STRING       6    0    best bad string
+MP_INTEGER_LIT      8    0    6           
+MP_FIXED_LIT        8    1    75345.234   
+MP_FLOAT_LIT        8    2    7.3E10      
+MP_FLOAT_LIT        8    3    987.45e-465 
+MP_ERROR           10    1    ?           
+MP_ERROR           10    3    _x_         
+MP_IDENTIFIER      10    4    _x          
+MP_IDENTIFIER      10    6    _x          
+MP_ERROR           10    8    _x_         
+MP_ERROR           10   10    x_          
+MP_ERROR           10   11    ?           
+MP_BEGIN           12    1    begin       
+MP_WRITE           13    3    write       
+MP_LPAREN          13    4    (           
+MP_IDENTIFIER      13    5    i           
+MP_RPAREN          13    6    )           
+MP_SCOLON          13    7    ;           
+MP_END             14    1    end         
+MP_PERIOD          14    2    .           
+MP_EOF             14    2                
