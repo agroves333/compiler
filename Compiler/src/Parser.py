@@ -14,8 +14,11 @@ class Parser(object):
         
         self.lookahead = self.scanner.getNextToken()
 
-    def match(self, toMatch): pass
-        
+    def match(self, toMatch): 
+        if(self.lookahead == toMatch):
+            self.lookahead = self.scanner.getNextToken()
+        else:
+            self.error()
     #1
     def systemGoal(self):
         if self.lookahead is "MP_PROGRAM":
@@ -26,16 +29,16 @@ class Parser(object):
     def program(self):
         if self.lookahead is "MP_PROGRAM":
             self.programHeading()
-            self.match(';')
+            self.match("MP_SCOLON")
             self.block()
-            self.match('.')
+            self.match("MP_PERIOD")
         else:
             self.error()
     
     #3
     def programHeading(self):
         if self.lookahead is "MP_PROGRAM":
-            self.match("program")
+            self.match("MP_PROGRAM")
             self.programIdentifier()
         else:
             self.error()
@@ -52,9 +55,9 @@ class Parser(object):
     #5
     def variableDeclarationPart(self):
         if self.lookahead is "MP_VAR":
-            self.match("var")
+            self.match("MP_VAR")
             self.variableDeclaration()
-            self.match(';')
+            self.match("MP_SCOLON")
             self.variableDeclarationTail()
         else:
             self.error()
@@ -65,7 +68,7 @@ class Parser(object):
             return
         elif self.lookahead is "MP_IDENTIFIER":
             self.variableDeclaration()
-            self.match(';')
+            self.match("MP_SCOLON")
             self.variableDeclarationTail()
         else:
             self.error()
@@ -74,7 +77,7 @@ class Parser(object):
     def variableDeclaration(self):
         if self.lookahead is "MP_IDENTIFIER":
             self.identifierList()
-            self.match(':')
+            self.match("MP_SCOLON")
             self.type()
         else:
             self.error()
@@ -82,9 +85,9 @@ class Parser(object):
     #9 #10 #11
     def type(self):
         if self.lookahead is "MP_INTEGER":
-            self.match("integer")
+            self.match("MP_INTEGER")
         elif self.lookahead is "MP_FLOAT":
-            self.match("float")
+            self.match("MP_FLOAT")
         #TODO: Boolean rule #11
         else:
             self.error()
