@@ -1,18 +1,17 @@
 
-from Scanner import Scanner
 
 class Parser(object):
     
-    scanner = Scanner()
+    scanner = None
     lookahead = ''
     
     # Constructor
-    def __init__(self):
-        pass
+    def __init__(self, scanner):
+        self.scanner = scanner
 
-    def parse(self):
-        
+    def parse(self):    
         self.lookahead = self.scanner.getNextToken()
+        self.systemGoal()
 
     def match(self, toMatch): 
         if(self.lookahead == toMatch):
