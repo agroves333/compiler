@@ -19,16 +19,16 @@ class Parser(object):
         else:
             self.error()
             
-    # 1 SystemGoal -> Program eof
+    
     def systemGoal(self):
-        if self.lookahead is "MP_PROGRAM":
+        if self.lookahead is "MP_PROGRAM":                  # 1 SystemGoal -> Program eof
             self.program()
         else:
             self.error()
             
-    # 2 Program -> ProgramHeading ";" Block "."
+   
     def program(self):
-        if self.lookahead is "MP_PROGRAM":
+        if self.lookahead is "MP_PROGRAM":                  # 2 Program -> ProgramHeading ";" Block "."
             self.programHeading()
             self.match("MP_SCOLON")
             self.block()
@@ -36,17 +36,17 @@ class Parser(object):
         else:
             self.error()
     
-    # 3 ProgramHeading -> "program" ProgramIdentifier
+    
     def programHeading(self):
-        if self.lookahead is "MP_PROGRAM":
+        if self.lookahead is "MP_PROGRAM":                  # 3 ProgramHeading -> "program" ProgramIdentifier
             self.match("MP_PROGRAM")
             self.programIdentifier()
         else:
             self.error()
     
-    # 4 Block -> VariableDeclarationPart ProcedureAndFunctionDeclarationPart StatementPart
+    
     def block(self):
-        if self.lookahead is "MP_VAR":
+        if self.lookahead is "MP_VAR":                      # 4 Block -> VariableDeclarationPart ProcedureAndFunctionDeclarationPart StatementPart
             self.variableDeclarationPart()
             self.procedureAndFunctionDeclarationPart()
             self.statementPart()
@@ -54,9 +54,9 @@ class Parser(object):
             self.error()
     
     
-    # 5 VariableDeclarationPart -> "var" VariableDeclaration ";" VariableDeclarationTail
+    
     def variableDeclarationPart(self):
-        if self.lookahead is "MP_VAR":
+        if self.lookahead is "MP_VAR":                      # 5 VariableDeclarationPart -> "var" VariableDeclaration ";" VariableDeclarationTail
             self.match("MP_VAR")
             self.variableDeclaration()
             self.match("MP_SCOLON")
@@ -65,12 +65,12 @@ class Parser(object):
             self.error()
     
     
-    # 6 VariableDeclarationTail -> VariableDeclaration ";" VariableDeclarationTail 
-    # 7 VariableDeclarationTail -> lambda
+    
+    
     def variableDeclarationTail(self):
-        if self.lookahead in ["MP_PROCEDURE", "MP_FUNCTION", "MP_BEGIN"]:  # 7
+        if self.lookahead in ["MP_PROCEDURE", "MP_FUNCTION", "MP_BEGIN"]:  # 7 VariableDeclarationTail -> lambda
             return
-        elif self.lookahead is "MP_IDENTIFIER":  # 6
+        elif self.lookahead is "MP_IDENTIFIER":             # 6 VariableDeclarationTail -> VariableDeclaration ";" VariableDeclarationTail 
             self.variableDeclaration()
             self.match("MP_SCOLON")
             self.variableDeclarationTail()
@@ -78,72 +78,120 @@ class Parser(object):
             self.error()
     
     
-    # 8 VariableDeclaration -> Identifierlist ":" Type  
+    
     def variableDeclaration(self):
-        if self.lookahead is "MP_IDENTIFIER":
+        if self.lookahead is "MP_IDENTIFIER":               # 8 VariableDeclaration -> Identifierlist ":" Type  
             self.identifierList()
             self.match("MP_SCOLON")
             self.type()
         else:
             self.error()
     
-    # 9   Type -> "Integer"
-    # 10  Type -> "Float"
-    # 11  Type -> "Boolean"
+    
+    
+    
     def type(self):
-        if self.lookahead is "MP_INTEGER":
+        if self.lookahead is "MP_INTEGER":                  # 9   Type -> "Integer"
             self.match("MP_INTEGER")
-        elif self.lookahead is "MP_FLOAT":
+        elif self.lookahead is "MP_FLOAT":                  # 10  Type -> "Float"
             self.match("MP_FLOAT")
         #TODO: Boolean rule #11
+                                                            # 11  Type -> "Boolean"
         else:
             self.error()
     
     
-    # 12 ProcedureAndFunctionDeclarationPart -> ProcedureDeclaration ProcedureAndFunctionDeclarationPart
-    # 13 ProcedureAndFunctionDeclarationPart -> ProcedureDeclaration ProcedureAndFunctionDeclarationPart
-    # 14 ProcedureAndFunctionDeclarationPart -> ProcedureDeclaration ProcedureAndFunctionDeclarationPart
     def procedureAndFunctionDeclarationPart(self):
-        if self.lookahead is "MP_PROCEDURE":
+        if self.lookahead is "MP_PROCEDURE":                # 12 ProcedureAndFunctionDeclarationPart -> ProcedureDeclaration ProcedureAndFunctionDeclarationPart
             self.procedureDeclaration()
             self.procedureAndFunctionDeclarationPart()
-        elif self.lookahead is "MP_FUNCTION":
+        elif self.lookahead is "MP_FUNCTION":               # 13 ProcedureAndFunctionDeclarationPart -> FunctionDeclaration ProcedureAndFunctionDeclarationPart
             self.functionDeclaration()
             self.procedureAndFunctionDeclarationPart()
-        elif self.lookahead is "MP_BEGIN":
+        elif self.lookahead is "MP_BEGIN":                  # 14 ProcedureAndFunctionDeclarationPart -> lambda
             return
         else:
             self.error()
 
     
-    # 15 ProcedureDeclaration -> ProcedureHeading ";" Block ";"
-    def procedureDeclaration(self): pass
+    def procedureDeclaration(self):
+        if self.lookahead is "MP_PROCEDURE":                # 15 ProcedureDeclaration -> ProcedureHeading ";" Block ";"
+            self.procedureHeading();
+            self.match('MP_SCOLON')
+            self.block()
+            self.match('MP_SCOLON')
+        else:
+            self.error()
     
-    # 16 FunctionDeclaration  -> FunctionHeading ";" Block ";"       
-    def functionDeclaration(self): pass
+          
+    def functionDeclaration(self):
+        if self.lookahead is "MP_FUNCTION":                 # 16 FunctionDeclaration  -> FunctionHeading ";" Block ";" 
+            self.functionHeading()
+            self.match("MP_SCOLON");
+        else:
+            self.error()
     
-    # 17 ProcedureHeading -> "procedure" procedureIdentifier OptionalFormalParameterList
-    def procedureHeading(self): pass
     
-    # 18 FunctionHeading -> "function" functionIdentifier OptionalFormalParameterList ":" Type
-    def functionHeading(self): pass
+    def procedureHeading(self):
+        if self.lookahead is "MP_PROCEDURE":                # 17 ProcedureHeading -> "procedure" procedureIdentifier OptionalFormalParameterList
+            self.match("MP_PROCEDURE")
+            self.procedureIdentifier()
+            self.optionalFormalParameterList()
+        else:
+            self.error()
     
-    # 19 OptionalFormalParameterList -> "(" FormalParameterSection FormalParameterSectionTail ")"
-    # 20 OptionalFormalParameterList -> lambda
-    # 21 FormalParameterSectionTail -> ";" FormalParameterSection FormalParameterSectionTail
-    # 22 FormalParameterSectionTail -> lambda
-    def optionalFormalParameterList(self): pass
     
-    # 21 FormalParameterSectionTail -> ";" FormalParameterSection FormalParameterSectionTail
-    # 22 FormalParameterSectionTail -> lambda
-    def formalParameterSectionTail(self): pass
+    def functionHeading(self):
+        if self.lookahead is "MP_FUNCTION":                 # 18 FunctionHeading -> "function" functionIdentifier OptionalFormalParameterList ":" Type
+            self.match("MP_FUNCTION")
+            self.procedureIdentifier()
+            self.optionalFormalParameterList()
+            self.match("MP_COLON")
+            self.type()
+        else:
+            self.error()
     
-    # 23 FormalParameterSection -> ValueParameterSection
-    # 24 FormalParameterSection -> VariableParameterSection
-    def formalParameterSection(self): pass
     
-    # 25 ValueParameterSection -> IdentifierList ":" Type
-    def valueParameterSection(self): pass
+    
+    def optionalFormalParameterList(self):
+        if self.lookahead is 'MP_LPAREN':                   # 19 OptionalFormalParameterList -> "(" FormalParameterSection FormalParameterSectionTail ")"
+            self.match('MP_LPAREN')
+            self.formalParameterSection()
+            self.formalParameterSectionTail()
+        elif self.lookahead in ['MP_COLON', 'MP_SCOLON']:   # 20 OptionalFormalParameterList -> lambda
+            return
+        else:
+            self.error
+       
+    
+    def formalParameterSectionTail(self):
+        if self.lookahead is "MP_SCOLON":                   # 21 FormalParameterSectionTail -> ";" FormalParameterSection FormalParameterSectionTail
+            self.match('MP_SCOLON')
+            self.formalParameterSection()
+            self.formalParameterSectionTail()
+        elif self.lookahead is 'MP_LPAREN':                 # 22 FormalParameterSectionTail -> lambda
+            return 
+        else:
+            self.error
+    
+    
+    
+    def formalParameterSection(self):
+        if self.lookahead is 'MP_IDENTIFIER':               # 23 FormalParameterSection -> ValueParameterSection
+            self.valueParameterSection()
+        elif self.lookahead is 'MP_VAR':                    # 24 FormalParameterSection -> VariableParameterSection
+            self.variableParameterSection()
+        else:
+            self.error()
+    
+    
+    def valueParameterSection(self):
+        if self.lookahead is 'MP_IDENTIFIER':               # 25 ValueParameterSection -> IdentifierList ":" Type
+            self.identifierList()
+            self.match('MP_COLON')
+            self.type()
+        else:
+            self.error()
     
     # 26 VariableParameterSection -> "var" IdentifierList ":" Type
     def variableParameterSection(self): pass
