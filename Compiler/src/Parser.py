@@ -81,7 +81,7 @@ class Parser(object):
     def variableDeclaration(self):
         if self.lookahead is "MP_IDENTIFIER":               # 8 VariableDeclaration -> Identifierlist ":" Type  
             self.identifierList()
-            self.match("MP_SCOLON")
+            self.match("MP_COLON")
             self.type()
         else:
             self.error()
@@ -308,7 +308,7 @@ class Parser(object):
     def writeStatement(self):
         if self.lookahead is 'MP_WRITE':        # 47 WriteStatement -> "write" "(" WriteParameter WriteParameterTail ")"
             self.match('MP_WRITE')
-            self.match('MP_WRITE')
+            self.match('MP_LPAREN')
             self.writeParameter()
             self.writeParameterTail()
             self.match('MP_RPAREN')
@@ -337,8 +337,13 @@ class Parser(object):
     
     def assignmentStatement(self):
         if self.lookahead is 'MP_IDENTIFIER':   # 51 AssignmentStatement -> VariableIdentifier ":=" Expression  OR
-            self.variableIdentifier()           # 52 AssignmentStatement -> FunctionIdentifier ":=" Expression  
-#            self.functionIdentifier()
+            self.variableIdentifier()
+            self.match('MP_ASSIGN')
+            self.expression()
+        #elif self.lookahead is '':   # 52 AssignmentStatement -> FunctionIdentifier ":=" Expression  
+        #    self.functionIdentifier()
+        #    self.match('MP_ASSIGN')
+        #    self.expression()
         else:
             self.error()
             

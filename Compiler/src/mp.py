@@ -18,7 +18,7 @@ def main():
     
     parser.parse()
     
-    file.close()
+    sourceFile.close()
     
 if __name__ == '__main__':
     main()

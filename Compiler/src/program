@@ -1,17 +1,9 @@
-program test;
+program Tester;
 
-var i : integer;
-i := 1;
-'test good '' string'
-'best bad string
-{ comment }
+ var I: Integer;
 
-6 75345.234 7.3E10 987.45e-465
-
-? _x _x_ x_?
-
-_good_ident84
-
-begin
-  write(i);
-end.
+  begin {tester}
+    Write (I);
+    Read(I);
+    I := I + 1
+  end. {tester}
