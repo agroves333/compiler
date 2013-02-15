@@ -54,7 +54,6 @@ class Parser(object):
             self.error()
     
     
-    
     def variableDeclarationPart(self):
         if self.lookahead is "MP_VAR":                      # 5 VariableDeclarationPart -> "var" VariableDeclaration ";" VariableDeclarationTail
             self.match("MP_VAR")
@@ -63,8 +62,6 @@ class Parser(object):
             self.variableDeclarationTail()
         else:
             self.error()
-    
-    
     
     
     def variableDeclarationTail(self):
@@ -86,8 +83,6 @@ class Parser(object):
             self.type()
         else:
             self.error()
-    
-    
     
     
     def type(self):
@@ -193,79 +188,227 @@ class Parser(object):
         else:
             self.error()
     
-    # 26 VariableParameterSection -> "var" IdentifierList ":" Type
-    def variableParameterSection(self): pass
     
-    # 27 StatementPart -> CompoundStatement 
-    def statementPart(self): pass
+    def variableParameterSection(self):
+        if self.lookahead is 'MP_VAR':                      # 26 VariableParameterSection -> "var" IdentifierList ":" Type
+            self.match('MP_VAR')
+            self.identifierList();
+            self.match('MP_COLON')
+            self.type()
+        else:
+            self.error()
     
-    # 28 CompoundStatement -> "begin" StatementSequence "end"
-    def compoundStatement(self): pass
     
-    # 29 StatementSequence -> Statement StatementTail
-    def statementSequence(self): pass
+    def statementPart(self):
+        if self.lookahead is 'MP_BEGIN':                    # 27 StatementPart -> CompoundStatement 
+            self.compoundStatement()
+        else:
+            self.error()
+        
     
-    # 30 StatementTail -> ";" Statement StatementTail
-    # 31 StatementTail -> lambda
-    def statementTail(self): pass
+    def compoundStatement(self):
+        if self.lookahead is 'MP_BEGIN':                    # 28 CompoundStatement -> "begin" StatementSequence "end"
+            self.match('MP_BEGIN')
+            self.statementSequence()
+            self.match('MP_END')
+        else:
+            self.error()
     
-    # 32 Statement -> EmptyStatement
-    # 33 Statement -> CompoundStatement 
-    # 34 Statement -> ReadStatement
-    # 35 Statement -> WriteStatement
-    # 36 Statement -> AssignmentStatement
-    # 37 Statement -> IfStatement
-    # 38 Statement -> WhileStatement
-    # 39 Statement -> RepeatStatement
-    # 40 Statement -> ForStatement
-    # 41 Statement -> ProcedureStatement
-    def statement(self): pass
     
-    # 42 EmptyStatement -> lambda
-    def emptyStatement(self): pass
+    def statementSequence(self):
+        if self.lookahead in ['MP_SCOLON', 'MP_IDENTIFIER', # 29 StatementSequence -> Statement StatementTail
+                              'MP_BEGIN', 'MP_END', 'MP_READ',
+                              'MP_WRITE', 'MP_IF', 'MP_ELSE', 
+                              'MP_REPEAT', 'MP_UNTIL', 'MP_WHILE', 
+                              'MP_FOR']:
+            self.statement()
+            self.statementTail()
+        else:
+            self.error()
     
-    # 43 ReadStatement -> "read" "(" ReadParameter ReadParameterTail ")"
-    def readStatement(self): pass
     
-    # 44 ReadParameterTail -> "," ReadParameter ReadParameterTail
-    # 45 ReadParameterTail -> lambda
-    def readParameterTail(self): pass
+    def statementTail(self):
+        if self.lookahead is 'MP_SCOLON':               # 30 StatementTail -> ";" Statement StatementTail
+            self.match('MP_SCOLON')
+            self.statement()
+            self.statementTail()
+        elif self.lookahead in ['MP_END', 'MP_UNTIL']:  # 31 StatementTail -> lambda
+            return
+        else:
+            self.error()
     
-    # 46 ReadParameter -> VariableIdentifier   
-    def readParameter(self): pass
     
-    # 47 WriteStatement -> "write" "(" WriteParameter WriteParameterTail ")"
-    def writeStatement(self): pass
+    def statement(self):
+        if self.lookahead in ['MP_SCOLON', 'MP_END', 'MP_ELSE']:    # 32 Statement -> EmptyStatement
+            self.emptyStatement()
+        elif self.lookahead is 'MP_BEGIN':                          # 33 Statement -> CompoundStatement 
+            self.compoundStatement()
+        elif self.lookahead is 'MP_READ':                           # 34 Statement -> ReadStatement
+            self.readStatement()
+        elif self.lookahead is 'MP_WRITE':                          # 35 Statement -> WriteStatement
+            self.writeStatement()
+        elif self.lookahead is 'MP_IDENTIFIER':                     # 36 Statement -> AssignmentStatement   OR  # 41 Statement -> ProcedureStatement
+            self.assignmentStatement()
+#            self.procedureStatement()
+        elif self.lookahead is 'MP_IF':                             # 37 Statement -> IfStatement
+            self.ifStatement()
+        elif self.lookahead is 'MP_WHILE':                          # 38 Statement -> WhileStatement
+            self.whileStatement()
+        elif self.lookahead is 'MP_REPEAT':                         # 39 Statement -> RepeatStatement
+            self.repeatStatement()
+        elif self.lookahead is 'MP_FOR':                            # 40 Statement -> ForStatement
+            self.forStatement()
+        elif self.lookahead is 'MP_IDENTIFIER':                     # 41 Statement -> ProcedureStatement   OR  # 36 Statement -> AssignmentStatement
+            self.procedureStatement()  
+#            self.assignmentStatement()
+        else:
+            self.error()
     
-    # 48 WriteParameterTail -> "," WriteParameter
-    # 49 WriteParameterTail -> lambda
-    def writeParameterTail(self): pass
     
-    # 50 WriteParameter -> OrdinalExpression    
-    def writeParameter(self): pass
     
-    # 51 AssignmentStatement -> VariableIdentifier ":=" Expression
-    # 52 AssignmentStatement -> FunctionIdentifier ":=" Expression  
-    def assignmentStatement(self): pass
+    def emptyStatement(self):
+        if self.lookahead in ['MP_SCOLON', 'MP_END',        # 42 EmptyStatement -> lambda
+                              'MP_ELSE', 'MP_UNTIL']:
+            return
+        else:
+            self.error()
     
-    # 53 IfStatement -> "if" BooleanExpression "then" Statement OptionalElsePart
-    def ifStatement(self): pass
     
-    # 54 OptionalElsePart -> "else" Statement
-    # 55 OptionalElsePart -> lambda 
-    def optionalElsePart(self): pass
+    def readStatement(self):
+        if self.lookahead is 'MP_READ':          # 43 ReadStatement -> "read" "(" ReadParameter ReadParameterTail ")"
+            self.match('MP_READ')
+            self.match('MP_LPAREN')
+            self.readParameter()
+            self.readParameterTail()
+            self.match('MP_RPAREN')
+        else:
+            self.error()
+            
     
-    # 56 RepeatStatement -> "repeat" StatementSequence "until" BooleanExpression            
-    def repeatStatement(self): pass
+    def readParameterTail(self):
+        if self.lookahead is 'MP_COMMA':        # 44 ReadParameterTail -> "," ReadParameter ReadParameterTail
+            self.match('MP_COMMA')
+            self.readParameter()
+            self.readParameterTail()
+        elif self.lookahead is 'MP_RPAREN':     # 45 ReadParameterTail -> lambda
+            return
+        else:
+            self.error()
     
-    # 57 WhileStatement -> "while" BooleanExpression "do" Statement   
-    def whileStatement(self): pass
     
-    # 58 ForStatement -> "for" ControlVariable ":=" InitialValue StepValue FinalValue "do" Statement
-    def forStatement(self): pass
+    def readParameter(self):
+        if self.lookahead is 'MP_IDENTIFIER':   # 46 ReadParameter -> VariableIdentifier   
+            self.variableIdentifier()
+        else:
+            self.error()
+            
     
-    # 59 ControlVariable -> VariableIdentifier
-    def controlVariable(self): pass
+    def writeStatement(self):
+        if self.lookahead is 'MP_WRITE':        # 47 WriteStatement -> "write" "(" WriteParameter WriteParameterTail ")"
+            self.match('MP_WRITE')
+            self.match('MP_WRITE')
+            self.writeParameter()
+            self.writeParameterTail()
+            self.match('MP_RPAREN')
+        else:
+            self.error()
+      
+    
+    def writeParameterTail(self):
+        if self.lookahead is 'MP_COMMA':        # 48 WriteParameterTail -> "," WriteParameter
+            self.match('MP_COMMA')
+            self.writeParameter()
+        elif self.lookahead is 'MP_RPAREN':     # 49 WriteParameterTail -> lambda
+            return
+        else:
+            self.error()
+    
+    
+    def writeParameter(self):
+        if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',  # 50 WriteParameter -> OrdinalExpression    
+                              'MP_PLUS', 'MP_MINUS',
+                              'MP_NOT', 'MP_INTEGER_LIT']:
+            self.ordinalExpression()
+        else:
+            self.error()
+    
+    
+    def assignmentStatement(self):
+        if self.lookahead is 'MP_IDENTIFIER':   # 51 AssignmentStatement -> VariableIdentifier ":=" Expression  OR
+            self.variableIdentifier()           # 52 AssignmentStatement -> FunctionIdentifier ":=" Expression  
+#            self.functionIdentifier()
+        else:
+            self.error()
+            
+            
+    
+    def ifStatement(self):
+        if self.lookahead is 'MP_IF':           # 53 IfStatement -> "if" BooleanExpression "then" Statement OptionalElsePart
+            self.match('MP_IF')
+            self.booleanExpression()
+            self.match('MP_THEN')
+            self.statement()
+            self.optionalElsePart()
+        else:
+            self.error()
+    
+    
+   
+   
+    def optionalElsePart(self):
+        if self.lookahead is 'MP_ELSE':                               # 54 OptionalElsePart -> "else" Statement
+            self.match('MP_ELSE')
+            self.statement()
+        elif self.lookahead in ['MP_SCOLON', 'MP_END', 'MP_UNTIL']:   # 55 OptionalElsePart -> lambda 
+            return
+        else:
+            self.error()
+            
+    
+                
+    def repeatStatement(self):
+        if self.lookahead is 'MP_REPEAT':           # 56 RepeatStatement -> "repeat" StatementSequence "until" BooleanExpression
+            self.match('MP_REPEAT')
+            self.statementSequence()
+            self.match('MP_UNTIL')
+            self.booleanExpression()
+        else:
+            self.error()
+            
+    
+    
+    def whileStatement(self):
+        if self.lookahead is 'MP_WHILE':            # 57 WhileStatement -> "while" BooleanExpression "do" Statement   
+            self.match('MP_WHILE')
+            self.booleanExpression()
+            self.match('MP_DO')
+            self.statement()
+        else:
+            self.error()
+            
+    
+    
+    def forStatement(self):
+        if self.lookahead is 'MP_FOR':              # 58 ForStatement -> "for" ControlVariable ":=" InitialValue StepValue FinalValue "do" Statement
+            self.match('MP_FOR')
+            self.controlVariable()
+            self.match('MP_ASSIGN')
+            self.initialValue()
+            self.stepValue()
+            self.finalValue()
+            self.match('MP_DO')
+            self.statement()
+        else:
+            self.error()
+            
+    
+    
+    def controlVariable(self):
+        if self.lookahead is 'MP_IDENTIFIER':       # 59 ControlVariable -> VariableIdentifier
+            self.variableIdentifier()
+        else:
+            self.error()
+            
     
     # 60 InitialValue -> OrdinalExpression
     def initialValue(self): pass
