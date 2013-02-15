@@ -1,4 +1,5 @@
-
+import sys
+from Scanner import Scanner
 
 class Parser(object):
     
@@ -6,8 +7,8 @@ class Parser(object):
     lookahead = ''
     
     # Constructor
-    def __init__(self, scanner):
-        self.scanner = scanner
+    def __init__(self, sourceFile):
+        self.scanner = Scanner(sourceFile)
 
     def parse(self):    
         self.lookahead = self.scanner.getNextToken()
@@ -344,29 +345,67 @@ class Parser(object):
     def factor(self): pass
     
     # 100 ProgramIdentifier -> Identifier
-    def programIdentifier(self): pass
+    def programIdentifier(self): 
+        if(self.lookahead == "MP_IDENTIFIER"):
+            self.match("MP_IDENTIFIER")
+        else:
+            self.error()
     
     # 101 VariableIdentifier -> Identifier
-    def variableIdentifier(self): pass
+    def variableIdentifier(self): 
+        if(self.lookahead == "MP_IDENTIFIER"):
+            self.match("MP_IDENTIFIER")
+        else:
+            self.error()
     
     # 102 ProcedureIdentifier -> Identifier
-    def procedureIdentifier(self): pass
+    def procedureIdentifier(self): 
+        if(self.lookahead == "MP_IDENTIFIER"):
+            self.match("MP_IDENTIFIER")
+        else:
+            self.error()
     
     # 103 FunctionIdentifier -> Identifier   
-    def functionIdentifier(self): pass
+    def functionIdentifier(self): 
+        if(self.lookahead == "MP_IDENTIFIER"):
+            self.match("MP_IDENTIFIER")
+        else:
+            self.error()
     
     # 104 BooleanExpression -> Expression
-    def booleanExpression(self): pass
+    def booleanExpression(self):
+        if(self.lookahead in ["MP_LPAREN","MP_IDENTIFIER", "MP_PLUS", "MP_MINUS", "MP_NOT", "MP_FIXED"]):
+            self.expression()
+        else:
+            self.error()
     
     # 105 OrdinalExpression -> Expression        
-    def ordinalExpression(self): pass
+    def ordinalExpression(self): 
+        if(self.lookahead in ["MP_LPAREN","MP_IDENTIFIER", "MP_PLUS", "MP_MINUS", "MP_NOT", "MP_FIXED"]):
+            self.expression()
+        else:
+            self.error()
     
     # 106 IdentifierList -> Identifier IdentifierTail
-    def identifierList(self): pass
+    def identifierList(self): 
+        if(self.lookahead == "MP_IDENTIFIER"):
+            self.match("MP_IDENTIFIER")
+            self.identifierTail()
+        else:
+            self.error()
     
     # 107 IdentifierTail -> "," Identifier IdentifierTail    
     # 108 IdentifierTail -> lambda
-    def identifierTail(self): pass
+    def identifierTail(self): 
+        if(self.lookahead == "MP_COMMA"):
+            self.match("MP_COMMA")
+            self.match("MP_IDENTIFIER")
+            self.identifierTail()
+        elif(self.lookahead == "MP_COLON"):
+            return
+        else:
+            self.error()                               
 
     def error(self):
-        print "A parse error has been encountered"        
+        print "Syntax error found on line " + str(self.scanner.getLineNumber()) + ", column " + str(self.scanner.getColumnNumber())
+        sys.exit()
