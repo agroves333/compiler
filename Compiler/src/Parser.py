@@ -688,14 +688,14 @@ class Parser(object):
     
    
     def booleanExpression(self):
-        if(self.lookahead in ["MP_LPAREN","MP_IDENTIFIER", "MP_PLUS", "MP_MINUS", "MP_NOT"]):  # 104 BooleanExpression -> Expression
+        if(self.lookahead in ["MP_LPAREN","MP_IDENTIFIER", "MP_PLUS", "MP_MINUS", "MP_NOT", "MP_INTEGER_LIT"]):  # 104 BooleanExpression -> Expression
             self.expression()
         else:
             self.error()
     
       
     def ordinalExpression(self): 
-        if(self.lookahead in ["MP_LPAREN","MP_IDENTIFIER", "MP_PLUS", "MP_MINUS", "MP_NOT"]): # 105 OrdinalExpression -> Expression      
+        if(self.lookahead in ["MP_LPAREN","MP_IDENTIFIER", "MP_PLUS", "MP_MINUS", "MP_NOT", "MP_INTEGER_LIT"]): # 105 OrdinalExpression -> Expression      
             self.expression()
         else:
             self.error()
