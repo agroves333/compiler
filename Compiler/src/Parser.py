@@ -410,81 +410,248 @@ class Parser(object):
             self.error()
             
     
-    # 60 InitialValue -> OrdinalExpression
-    def initialValue(self): pass
     
-    # 61 StepValue -> "to"
-    # 62 StepValue -> "downto"
-    def stepValue(self): pass
+    def initialValue(self):
+        if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',     # 60 InitialValue -> OrdinalExpression
+                              'MP_PLUS', 'MP_MINUS',
+                              'MP_NOT', 'MP_INTEGER_LIT']:
+            self.ordinalExpression()
+        else:
+            self.error()
     
-    # 63 FinalValue -> OrdinalExpression
-    def finalValue(self): pass
     
-    # 64 ProcedureStatement -> ProcedureIdentifier OptionalActualParameterList
-    def procedureStatement(self): pass
     
-    # 65 OptionalActualParameterList -> "(" ActualParameter ActualParameterTail ")"    
-    # 66 OptionalActualParameterList -> lambda
-    def optionalActualParameterList(self): pass
+    def stepValue(self):
+        if self.lookahead is 'MP_TO':               # 61 StepValue -> "to"
+            self.match('MP_TO')
+        elif self.lookahead is 'MP_DOWNTO':         # 62 StepValue -> "downto"
+            self.match('MP_DOWNTO')
+        else:
+            self.error()
+        
     
-    # 67 ActualParameterTail -> "," ActualParameter ActualParameterTail    
-    # 68 ActualParameterTail -> lambda
-    def actualParameterTail(self): pass
     
-    # 69 ActualParameter -> OrdinalExpression
-    def actualParameter(self): pass
+    def finalValue(self):
+        if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',     # 63 FinalValue -> OrdinalExpression
+                              'MP_PLUS', 'MP_MINUS', 'MP_NOT',
+                              'MP_INTEGER_LIT']:
+            self.ordinalExpression()
+        else:
+            self.error()
+            
     
-    # 70 Expression -> SimpleExpression OptionalRelationalPart
-    def expression(self): pass
     
-    # 71 OptionalRelationalPart -> RelationalOperator SimpleExpression    
-    # 72 OptionalRelationalPart -> lambda
-    def optionalRelationalPart(self): pass
+    def procedureStatement(self):
+        if self.lookahead is 'MP_IDENTIFIER':           # 64 ProcedureStatement -> ProcedureIdentifier OptionalActualParameterList
+            self.procedureIdentifier()
+            self.optionalActualParameterList()
+        else:
+            self.error()
     
-    # 73 RelationalOperator -> "="    
-    # 74 RelationalOperator -> "<"    
-    # 75 RelationalOperator -> ">"    
-    # 76 RelationalOperator -> "<="    
-    # 77 RelationalOperator -> ">="    
-    # 78 RelationalOperator -> "<>"
-    def relationalOperator(self): pass
     
-    # 79 SimpleExpression -> OptionalSign Term TermTail
-    def simpleExpression(self): pass
     
-    # 80 TermTail -> AddingOperator Term TermTail    
-    # 81 TermTail -> lambda
-    def termTail(self): pass
+    def optionalActualParameterList(self):
+        if self.lookahead is 'MP_LPAREN':   # 65 OptionalActualParameterList -> "(" ActualParameter ActualParameterTail ")"    
+            self.match('MP_LPAREN')
+            self.actualParameter()
+            self.actualParameterTail()
+            self.match('MP_RPAREN')
+        elif self.lookahead in ['MP_SCOLON', 'MP_RPAREN', 'MP_END', 'MP_COMMA',     # 66 OptionalActualParameterList -> lambda
+                                'MP_THEN', 'MP_ELSE', 'MP_UNTIL', 'MP_TO',
+                                'MP_DO', 'MP_DOWNTO', 'MP_EQUAL', 'MP_LTHAN',
+                                'MP_GTHAN', 'MP_LEQUAL', 'MP_GEQUAL', 'MP_NEQUAL',
+                                'MP_PLUS', 'MP_MINUS', 'MP_OR', 'MP_TIMES',
+                                'MP_DIV', 'MP_MOD', 'MP_AND']:
+            return
+        else:
+            self.error()
+            
     
-    # 82 OptionalSign -> "+"    
-    # 83 OptionalSign -> "-"    
-    # 84 OptionalSign -> lambda
-    def optionalSign(self): pass
     
-    # 85 AddingOperator -> "+"    
-    # 86 AddingOperator -> "-"   
-    # 87 AddingOperator -> "or"
-    def addingOperator(self): pass
     
-    # 88 Term -> Factor FactorTail    
-    def term(self): pass
+    def actualParameterTail(self):
+        if self.lookahead is 'MP_COMMA':            # 67 ActualParameterTail -> "," ActualParameter ActualParameterTail    
+            self.match('MP_COMMA')
+            self.actualParameter()
+            self.actualParameterTail()
+        elif self.lookahead is 'MP_RPAREN':         # 68 ActualParameterTail -> lambda
+            return
+        else:
+            self.error()
     
-    # 89 FactorTail -> MultiplyingOperator Factor FactorTail    
-    # 90 FactorTail -> lambda
-    def factorTail(self): pass
     
-    # 91 MultiplyingOperator  -> "*"    
-    # 92 MultiplyingOperator  -> "div"    
-    # 93 MultiplyingOperator  -> "mod"    
-    # 94 MultiplyingOperator  -> "and"
-    def multiplyingOperator(self): pass
+   
+    def actualParameter(self):
+        if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',          # 69 ActualParameter -> OrdinalExpression
+                              'MP_PLUS', 'MP_MINUS', 'MP_NOT', 
+                              'MP_INTEGER_LIT']:
+            self.ordinalExpression()
+        else:
+            self.error()
+            
     
-    # 95 Factor -> UnsignedInteger
-    # 96 Factor -> VariableIdentifier
-    # 97 Factor -> "not" Factor    
-    # 98 Factor -> "(" Expression ")"    
-    # 99 Factor -> FunctionIdentifier OptionalActualParameterList
-    def factor(self): pass
+    
+    def expression(self):
+        if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',          # 70 Expression -> SimpleExpression OptionalRelationalPart
+                              'MP_PLUS', 'MP_MINUS', 'MP_NOT', 
+                              'MP_INTEGER_LIT']:
+            self.simpleExpression()
+            self.optionalRelationalPart()
+        else:
+            self.error()
+         
+    
+    
+    def optionalRelationalPart(self):
+        if self.lookahead in ['MP_EQUAL', 'MP_LTHAN',               # 71 OptionalRelationalPart -> RelationalOperator SimpleExpression    
+                              'MP_GTHAN', 'MP_LEQUAL',
+                              'MP_GEQUAL', 'MP_NEQUAL']:
+            self.relationalOperator()
+            self.simpleExpression()
+        elif self.lookahead in ['MP_RPAREN', 'MP_END',              # 72 OptionalRelationalPart -> lambda
+                                'MP_COMMA', 'MP_THEN',
+                                'MP_ELSE', 'MP_UNTIL',
+                                'MP_DO', 'MP_TO', 'MP_DOWNTO']:
+            return
+        else:
+            self.error()    
+        
+    
+       
+    def relationalOperator(self):
+        if self.lookahead is 'MP_EQUAL':        # 73 RelationalOperator -> "=" 
+            self.match('MP_EQUAL')
+        elif self.lookahead is 'MP_LTHAN':      # 74 RelationalOperator -> "<"
+            self.match('MP_LTHAN')
+        elif self.lookahead is 'MP_GTHAN':      # 75 RelationalOperator -> ">"    
+            self.match('MP_GTHAN')
+        elif self.lookahead is 'MP_LEQUAL':     # 76 RelationalOperator -> "<="  
+            self.match('MP_LEQUAL')
+        elif self.lookahead is 'MP_GEQUAL':     # 77 RelationalOperator -> ">="    
+            self.match('MP_GEQUAL')
+        elif self.lookahead is 'MP_NEQUAL':     # 78 RelationalOperator -> "<>"
+            self.match('MP_NEQUAL')
+        else:
+            self.error()
+            
+    
+    
+    def simpleExpression(self):
+        if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',          # 79 SimpleExpression -> OptionalSign Term TermTail
+                              'MP_PLUS', 'MP_MINUS', 'MP_NOT', 
+                              'MP_INTEGER_LIT']:
+            self.optionalSign()
+            self.term()
+            self.termTail()
+        else:
+            self.error()
+            
+    
+     
+    
+    def termTail(self):
+        if self.lookahead in ['MP_PLUS', 'MP_MINUS', 'MP_OR']:          # 80 TermTail -> AddingOperator Term TermTail   
+            self.addingOperator()
+            self.term()
+            self.termTail()
+        elif self.lookahead in ['MP_SCOLON', 'MP_RPAREN', 'MP_END',     # 81 TermTail -> lambda
+                                'MP_COMMA', 'MP_THEN', 'MP_ELSE',
+                                'MP_UNTIL', 'MP_DO', 'MP_TO',
+                                'MP_DOWNTO', 'MP_EQUAL', 'MP_LTHAN',
+                                'MP_GTHAN', 'MP_LEQUAL', 'MP_GEQUAL',
+                                'MP_NEQUAL']:
+            return
+        else:
+            self.error()
+            
+    
+    
+    def optionalSign(self):
+        if self.lookahead is 'MP_PLUS':                         # 82 OptionalSign -> "+"  
+            self.match('MP_PLUS')
+        elif self.lookahead is 'MP_MINUS':                      # 83 OptionalSign -> "-"   
+            self.match('MP_MINUS')
+        elif self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',   # 84 OptionalSign -> lambda
+                                'MP_NOT', 'MP_INTEGER_LIT']:
+            return
+        else:
+            self.error()
+    
+    
+    
+    def addingOperator(self):
+        if self.lookahead is 'MP_PLUS':     # 85 AddingOperator -> "+" 
+            self.match('MP_PLUS')
+        elif self.lookahead is 'MP_MINUS':  # 86 AddingOperator -> "-"   
+            self.match('MP_MINUS')
+        elif self.lookahead is 'MP_OR':     # 87 AddingOperator -> "or"
+            self.match('MP_OR')
+        else:
+            self.error()
+            
+    
+    
+    def term(self):
+        if self.lookahead in ['MP_SCOLON', 'MP_RPAREN',     # 88 Term -> Factor FactorTail    
+                           'MP_IDENTIFIER', 'MP_NOT',
+                           'MP_INTEGER_LIT']:
+            self.factor()
+            self.factorTail()
+        else:
+            self.error()
+            
+            
+    
+    def factorTail(self):
+        if self.lookahead in ['MP_TIMES', 'MP_DIV',                     # 89 FactorTail -> MultiplyingOperator Factor FactorTail    
+                              'MP_MOD', 'MP_AND']:
+            self.multiplyingOperator()
+            self.factor()
+            self.factorTail()
+        elif self.lookahead in ['MP_SCOLON', 'MP_RPAREN', 'MP_END',      # 90 FactorTail -> lambda
+                                'MP_COMMA', 'MP_THEN', 'MP_ELSE', 
+                                'MP_UNTIL', 'MP_DO', 'MP_TO', 'MP_DOWNTO',
+                                'MP_EQUAL', 'MP_LTHAN', 'MP_GTHAN',
+                                'MP_LEQUAL', 'MP_GEQUAL', 'MP_NEQUAL',
+                                'MP_PLUS', 'MP_MINUS', 'MP_OR']:
+            return
+        else:
+            self.error()
+            
+            
+            
+    def multiplyingOperator(self): 
+        if self.lookahead is 'MP_TIMES':    # 91 MultiplyingOperator  -> "*"   
+            self.match('MP_TIMES')
+        elif self.lookahead is 'MP_DIV':    # 92 MultiplyingOperator  -> "div"    
+            self.match('MP_DIV')
+        elif self.lookahead is 'MP_MOD':    # 93 MultiplyingOperator  -> "mod"   
+            self.match('MP_MOD')
+        elif self.lookahead is 'MP_AND':    # 94 MultiplyingOperator  -> "and"
+            self.match('MP_AND')
+        else:
+            self.error()
+            
+    
+    
+    
+    
+      
+    
+    def factor(self):
+        if self.lookahead in ['MP_INTEGER_LIT']:    # 95 Factor -> UnsignedInteger
+            self.match('MP_INTEGER_LIT')
+        elif self.lookahead is 'MP_IDENTIFIER':     # 96 Factor -> VariableIdentifier  OR  # 99 Factor -> FunctionIdentifier OptionalActualParameterList
+            self.variableIdentifier()
+#            self.functionIdentifier()
+#            self.optionalActualParameterList()
+        elif self.lookahead is 'MP_NOT':            # 97 Factor -> "not" Factor    
+            self.match('MP_NOT');
+            self.factor()
+        elif self.lookahead is 'MP_LPAREN':         # 98 Factor -> "(" Expression ")"  
+            self.match('MP_LPAREN')
+            self.expression()
+            self.match('MP_RPAREN')
     
     # 100 ProgramIdentifier -> Identifier
     def programIdentifier(self): pass
