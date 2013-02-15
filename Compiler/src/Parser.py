@@ -13,6 +13,7 @@ class Parser(object):
     def parse(self):    
         self.lookahead = self.scanner.getNextToken()
         self.systemGoal()
+        print "The input program parses!"
 
     def match(self, toMatch): 
         if(self.lookahead == toMatch):
@@ -681,14 +682,14 @@ class Parser(object):
     
    
     def booleanExpression(self):
-        if(self.lookahead in ["MP_LPAREN","MP_IDENTIFIER", "MP_PLUS", "MP_MINUS", "MP_NOT", "MP_FIXED"]):  # 104 BooleanExpression -> Expression
+        if(self.lookahead in ["MP_LPAREN","MP_IDENTIFIER", "MP_PLUS", "MP_MINUS", "MP_NOT"]):  # 104 BooleanExpression -> Expression
             self.expression()
         else:
             self.error()
     
       
     def ordinalExpression(self): 
-        if(self.lookahead in ["MP_LPAREN","MP_IDENTIFIER", "MP_PLUS", "MP_MINUS", "MP_NOT", "MP_FIXED"]): # 105 OrdinalExpression -> Expression      
+        if(self.lookahead in ["MP_LPAREN","MP_IDENTIFIER", "MP_PLUS", "MP_MINUS", "MP_NOT"]): # 105 OrdinalExpression -> Expression      
             self.expression()
         else:
             self.error()
