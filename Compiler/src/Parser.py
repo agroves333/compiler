@@ -340,7 +340,8 @@ class Parser(object):
             self.variableIdentifier()
             self.match('MP_ASSIGN')
             self.expression()
-        #elif self.lookahead is '':   # 52 AssignmentStatement -> FunctionIdentifier ":=" Expression  
+        #This doesn't change parsing functionality
+        #elif self.lookahead is 'MP_IDENTIFIER':   # 52 AssignmentStatement -> FunctionIdentifier ":=" Expression  
         #    self.functionIdentifier()
         #    self.match('MP_ASSIGN')
         #    self.expression()
