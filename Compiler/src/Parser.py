@@ -635,10 +635,6 @@ class Parser(object):
             
     
     
-    
-    
-      
-    
     def factor(self):
         if self.lookahead in ['MP_INTEGER_LIT']:    # 95 Factor -> UnsignedInteger
             self.match('MP_INTEGER_LIT')
@@ -654,64 +650,65 @@ class Parser(object):
             self.expression()
             self.match('MP_RPAREN')
     
-    # 100 ProgramIdentifier -> Identifier
+    
+    
     def programIdentifier(self): 
-        if(self.lookahead == "MP_IDENTIFIER"):
+        if(self.lookahead == "MP_IDENTIFIER"):  # 100 ProgramIdentifier -> Identifier
             self.match("MP_IDENTIFIER")
         else:
             self.error()
     
-    # 101 VariableIdentifier -> Identifier
+    
     def variableIdentifier(self): 
-        if(self.lookahead == "MP_IDENTIFIER"):
+        if(self.lookahead == "MP_IDENTIFIER"):  # 101 VariableIdentifier -> Identifier
             self.match("MP_IDENTIFIER")
         else:
             self.error()
     
-    # 102 ProcedureIdentifier -> Identifier
+    
     def procedureIdentifier(self): 
-        if(self.lookahead == "MP_IDENTIFIER"):
+        if(self.lookahead == "MP_IDENTIFIER"):  # 102 ProcedureIdentifier -> Identifier
             self.match("MP_IDENTIFIER")
         else:
             self.error()
     
-    # 103 FunctionIdentifier -> Identifier   
+    
     def functionIdentifier(self): 
-        if(self.lookahead == "MP_IDENTIFIER"):
+        if(self.lookahead == "MP_IDENTIFIER"):  # 103 FunctionIdentifier -> Identifier   
             self.match("MP_IDENTIFIER")
         else:
             self.error()
     
-    # 104 BooleanExpression -> Expression
+   
     def booleanExpression(self):
-        if(self.lookahead in ["MP_LPAREN","MP_IDENTIFIER", "MP_PLUS", "MP_MINUS", "MP_NOT", "MP_FIXED"]):
+        if(self.lookahead in ["MP_LPAREN","MP_IDENTIFIER", "MP_PLUS", "MP_MINUS", "MP_NOT", "MP_FIXED"]):  # 104 BooleanExpression -> Expression
             self.expression()
         else:
             self.error()
     
-    # 105 OrdinalExpression -> Expression        
+      
     def ordinalExpression(self): 
-        if(self.lookahead in ["MP_LPAREN","MP_IDENTIFIER", "MP_PLUS", "MP_MINUS", "MP_NOT", "MP_FIXED"]):
+        if(self.lookahead in ["MP_LPAREN","MP_IDENTIFIER", "MP_PLUS", "MP_MINUS", "MP_NOT", "MP_FIXED"]): # 105 OrdinalExpression -> Expression      
             self.expression()
         else:
             self.error()
     
-    # 106 IdentifierList -> Identifier IdentifierTail
+    
     def identifierList(self): 
-        if(self.lookahead == "MP_IDENTIFIER"):
+        if(self.lookahead == "MP_IDENTIFIER"):  # 106 IdentifierList -> Identifier IdentifierTail
             self.match("MP_IDENTIFIER")
             self.identifierTail()
         else:
             self.error()
     
-    # 107 IdentifierTail -> "," Identifier IdentifierTail    
-    # 108 IdentifierTail -> lambda
+     
+    
     def identifierTail(self): 
-        if(self.lookahead == "MP_COMMA"):
+        if(self.lookahead == "MP_COMMA"):       # 107 IdentifierTail -> "," Identifier IdentifierTail   
             self.match("MP_COMMA")
             self.match("MP_IDENTIFIER")
             self.identifierTail()
-        elif(self.lookahead == "MP_COLON"):
+        elif(self.lookahead == "MP_COLON"):     # 108 IdentifierTail -> lambda
             return
         else:
             self.error()                               
