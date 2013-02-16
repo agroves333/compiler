@@ -19,7 +19,7 @@ class Parser(object):
         if(self.lookahead == toMatch):
             self.lookahead = self.scanner.getNextToken()
         else:
-            self.error()
+            self.matchError(toMatch)
             
     
     def systemGoal(self):
@@ -722,4 +722,9 @@ class Parser(object):
 
     def error(self):
         print "Syntax error found on line " + str(self.scanner.getLineNumber()) + ", column " + str(self.scanner.getColumnNumber())
+        sys.exit()
+        
+    def matchError(self, expected):
+        print "Match error found on line " + str(self.scanner.getLineNumber()) + ", column " + str(self.scanner.getColumnNumber())
+        print "Found " + self.lookahead + " when expected " + expected
         sys.exit()
