@@ -18,6 +18,8 @@ def main():
     
     parser.parse()
     
+    parser.printStack()
+    
     sourceFile.close()
     
 if __name__ == '__main__':

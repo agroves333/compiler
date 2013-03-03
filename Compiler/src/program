@@ -1,9 +1,25 @@
-program Tester;
+program lab1;
+    var  apple, candy: Integer;
+       
+   procedure mixit(a, b: Integer);
+      var pony: Integer;
+      
+      function fred(q: Integer);
+         begin
+           fred := q + 1;
+     	 end;
+     
+     function mary(x: Integer);
+     
+        begin
+           mary := x - 1;
+        end;
+        
 
- var I: Integer;
-
-  begin {tester}
-    Write (I);
-    Read(I);
-    I := I + 1
-  end. {tester}
+    begin
+        pony := a + b;
+    end;
+    
+  begin
+        write(zebra)
+  end.

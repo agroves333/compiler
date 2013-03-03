@@ -1,11 +1,10 @@
 
 class Scanner(object):
 
-    # Initialize vars
     lexeme = ""
     token = ""
     line_internal = 1
-    col_internal = 1 # hasn't read in a char yet
+    col_internal = 1
     line = None
     col = None
     sourceFile = None
@@ -13,7 +12,6 @@ class Scanner(object):
     _letters = map(chr, range(65, 91)) + map(chr, range(97, 123))
     _digits = map(chr, range(48, 58))
 
-    # Constuctor
     def __init__(self, sourceFile):
         self.sourceFile = sourceFile
         self._hashReserved()
