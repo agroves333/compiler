@@ -71,6 +71,8 @@ class Parser(object):
             self.variableDeclaration()
             self.match("MP_SCOLON")
             self.variableDeclarationTail()
+        elif self.lookahead in ["MP_PROCEDURE", "MP_FUNCTION", "MP_BEGIN"]:
+            return self.lookahead
         else:
             self.error()
     
