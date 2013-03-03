@@ -57,7 +57,7 @@ class Parser(object):
     
     
     def block(self):
-        if self.lookahead is "MP_VAR":  # 4 Block -> VariableDeclarationPart ProcedureAndFunctionDeclarationPart StatementPart
+        if self.lookahead in ["MP_VAR", "MP_BEGIN", "MP_FUNCTION", "MP_PROCEDURE"]:  # 4 Block -> VariableDeclarationPart ProcedureAndFunctionDeclarationPart StatementPart
             self.variableDeclarationPart()
             self.procedureAndFunctionDeclarationPart()
             self.statementPart()
@@ -71,6 +71,8 @@ class Parser(object):
             self.variableDeclaration()
             self.match("MP_SCOLON")
             self.variableDeclarationTail()
+        elif self.lookahead in ["MP_BEGIN", "MP_FUNCTION", "MP_PROCEDURE"]:
+            return
         else:
             self.error()
     
