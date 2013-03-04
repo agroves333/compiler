@@ -19,15 +19,15 @@ class Parser(object):
     def parse(self):
         self.lookahead = self.scanner.getNextToken()
         self.systemGoal()
-        print "The input program parses!"
+        print "Parsing Successful"
 
     def match(self, toMatch):
-        print toMatch + " " + self.scanner.lexeme
+#        print toMatch + " " + self.scanner.lexeme
         if(self.lookahead == toMatch):
             self.lookahead = self.scanner.getNextToken()
         else:
             # print the caller
-            print inspect.stack()[1][3]
+#            print inspect.stack()[1][3]
             self.matchError(toMatch)
            
     def systemGoal(self):
@@ -50,14 +50,13 @@ class Parser(object):
     def programHeading(self):
         if self.lookahead is "MP_PROGRAM":  # 3 ProgramHeading -> "program" ProgramIdentifier
             self.match("MP_PROGRAM")
-            identifier = self.programIdentifier()
-            self.symbolTableStack.append(SymbolTable(identifier))
+            self.programIdentifier()
         else:
             self.error()
     
     
     def block(self):
-        if self.lookahead is "MP_VAR":  # 4 Block -> VariableDeclarationPart ProcedureAndFunctionDeclarationPart StatementPart
+        if self.lookahead in ["MP_VAR", "MP_BEGIN", "MP_FUNCTION", "MP_PROCEDURE"]:  # 4 Block -> VariableDeclarationPart ProcedureAndFunctionDeclarationPart StatementPart
             self.variableDeclarationPart()
             self.procedureAndFunctionDeclarationPart()
             self.statementPart()
@@ -71,8 +70,9 @@ class Parser(object):
             self.variableDeclaration()
             self.match("MP_SCOLON")
             self.variableDeclarationTail()
-        elif self.lookahead in ["MP_PROCEDURE", "MP_FUNCTION", "MP_BEGIN"]:
-            return self.lookahead
+
+        elif self.lookahead in ["MP_BEGIN", "MP_FUNCTION", "MP_PROCEDURE"]:
+            return
         else:
             self.error()
     
@@ -90,10 +90,11 @@ class Parser(object):
     
     
     def variableDeclaration(self):
-        if self.lookahead is "MP_IDENTIFIER":  # 8 VariableDeclaration -> Identifierlist ":" Type  
-            self.identifierList()
+        if self.lookahead is "MP_IDENTIFIER":  # 8 VariableDeclaration -> IdentifierList ":" Type  
+            id = self.identifierList()
             self.match("MP_COLON")
-            self.type()
+            type = self.type()
+            self.insert(type, 'var', id)
         else:
             self.error()
     
@@ -101,8 +102,10 @@ class Parser(object):
     def type(self):
         if self.lookahead is "MP_INTEGER":  # 9   Type -> "Integer"
             self.match("MP_INTEGER")
+            return 'Integer'
         elif self.lookahead is "MP_FLOAT":  # 10  Type -> "Float"
             self.match("MP_FLOAT")
+            return 'Float'
         # TODO: Boolean rule #11
                                                             # 11  Type -> "Boolean"
         else:
@@ -660,9 +663,9 @@ class Parser(object):
         if self.lookahead in ['MP_INTEGER_LIT']:  # 95 Factor -> UnsignedInteger
             self.match('MP_INTEGER_LIT')
         elif self.lookahead is 'MP_IDENTIFIER':  # 96 Factor -> VariableIdentifier  OR  # 99 Factor -> FunctionIdentifier OptionalActualParameterList
-            self.variableIdentifier()
-#            self.functionIdentifier()
-#            self.optionalActualParameterList()
+#            self.variableIdentifier()
+            self.functionIdentifier()
+            self.optionalActualParameterList()
         elif self.lookahead is 'MP_NOT':  # 97 Factor -> "not" Factor    
             self.match('MP_NOT');
             self.factor()
@@ -675,7 +678,7 @@ class Parser(object):
     
     def programIdentifier(self): 
         if(self.lookahead == "MP_IDENTIFIER"):  # 100 ProgramIdentifier -> Identifier
-            id = self.scanner.lexeme
+            self.symbolTableStack.append(SymbolTable(self.scanner.lexeme))
             self.match("MP_IDENTIFIER")
             return id
         else:
@@ -691,6 +694,7 @@ class Parser(object):
     
     def procedureIdentifier(self): 
         if(self.lookahead == "MP_IDENTIFIER"):  # 102 ProcedureIdentifier -> Identifier
+            self.push()
             self.match("MP_IDENTIFIER")
         else:
             self.error()
@@ -698,6 +702,7 @@ class Parser(object):
     
     def functionIdentifier(self): 
         if(self.lookahead == "MP_IDENTIFIER"):  # 103 FunctionIdentifier -> Identifier   
+            self.push()
             self.match("MP_IDENTIFIER")
         else:
             self.error()
@@ -717,10 +722,12 @@ class Parser(object):
             self.error()
     
     
-    def identifierList(self): 
+    def identifierList(self):
         if(self.lookahead == "MP_IDENTIFIER"):  # 106 IdentifierList -> Identifier IdentifierTail
+            id = self.scanner.lexeme
             self.match("MP_IDENTIFIER")
             self.identifierTail()
+            return id
         else:
             self.error()
     
@@ -749,6 +756,23 @@ class Parser(object):
         sys.exit()
         
     def printStack(self):
-        print "\nStack\n-----------"
+        print "\nStack:\n    "
         for i, table in enumerate(reversed(self.symbolTableStack)):
-            print  i , table.name
+            print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')
+            print '{0:<1s}{1:^34s}{0:<1s}'.format('|', table.name)
+            print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')
+            print '{0:<1s} {1:10s} {2:10s} {3:10s} {0:<1s}'.format('|', 'Id', 'Type', 'Kind')
+            print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')
+            for entry in table.entries:
+                print '{0:<1s} {1:10s} {2:10s} {3:10s} {0:<1s}'.format('|', entry['id'], entry['type'], entry['kind'])
+            print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')+"\n"
+                       
+
+    def push(self):
+        self.symbolTableStack.append(SymbolTable(self.scanner.lexeme))
+        
+    def insert(self, type, kind, id = None,):
+        self.symbolTableStack[-1].insert(self.scanner.lexeme if id == None else id, type, kind)
+        
+        
+        

@@ -91,10 +91,11 @@ class Scanner(object):
 
         nextChar = self.sourceFile.read(1)
 
-        while(nextChar in [" ", "\n", "\r"]):
+        while(nextChar in [" ", "\n", "\r", "\t"]):
             if(nextChar == " "):
                 self.col_internal += 1
-
+            elif(nextChar == "\t"):
+                self.col_internal += 4
             elif(nextChar == "\n"):
                 self.line_internal += 1
                 self.col_internal = 1

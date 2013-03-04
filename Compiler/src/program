@@ -1,5 +1,5 @@
 program lab1;
-    var  apple, candy: Integer;
+   var  apple, candy, zebra: Integer;
        
    procedure mixit(a, b: Integer);
       var pony: Integer;
@@ -11,12 +11,12 @@ program lab1;
          
       function mary(x: Integer): Integer;
          begin
-         	mary := x - 1;
+           mary := x - 1;
          end;
          
+       begin
+          pony := a + b;
+       end;
     begin
-    	pony := a + b;
-    end;
-  begin
-  	write(zebra)
-  end.
+       write(zebra)
+    end.

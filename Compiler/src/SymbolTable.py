@@ -14,8 +14,8 @@ class SymbolTable(object):
     def __init__(self, name):
         self.name = name
     
-    def insert(self, id, type):
-        self.entries.append({"id":id,"type":type})
+    def insert(self, id, type, kind):
+        self.entries.append({"id":id,"type":type, "kind":kind})
         
     def find(self, id):
         for entry in self.entries:
