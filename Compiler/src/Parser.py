@@ -2,7 +2,6 @@ import sys
 import inspect
 
 from Scanner import Scanner
-from SymbolTableEntry import SymbolTableEntry
 from SymbolTable import SymbolTable
 
 class Parser(object):
