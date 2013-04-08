@@ -13,6 +13,7 @@ class SymbolTable(object):
     
     def __init__(self, name):
         self.name = name
+        self.entries = []
     
     def insert(self, id, type, kind):
         self.entries.append({"id":id,"type":type, "kind":kind})

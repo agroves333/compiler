@@ -1,8 +1,8 @@
 import sys
 import inspect
 
+from SymbolTable import SymbolTable 
 from Scanner import Scanner
-from SymbolTable import SymbolTable
 
 class Parser(object):
 
@@ -49,7 +49,8 @@ class Parser(object):
     def programHeading(self):
         if self.lookahead is "MP_PROGRAM":  # 3 ProgramHeading -> "program" ProgramIdentifier
             self.match("MP_PROGRAM")
-            self.programIdentifier()
+            ident = self.programIdentifier()
+            self.push(ident)
         else:
             self.error()
     
@@ -90,10 +91,11 @@ class Parser(object):
     
     def variableDeclaration(self):
         if self.lookahead is "MP_IDENTIFIER":  # 8 VariableDeclaration -> IdentifierList ":" Type  
-            id = self.identifierList()
+            idList = self.identifierList()
             self.match("MP_COLON")
             type = self.type()
-            self.insert(type, 'var', id)
+            for ident in idList:
+                self.insertEntry(type, 'var', ident)
         else:
             self.error()
     
@@ -147,7 +149,9 @@ class Parser(object):
     def procedureHeading(self):
         if self.lookahead is "MP_PROCEDURE":  # 17 ProcedureHeading -> "procedure" procedureIdentifier OptionalFormalParameterList
             self.match("MP_PROCEDURE")
-            self.procedureIdentifier()
+            ident = self.procedureIdentifier()
+            self.insertEntry('procedure', 'var', ident)
+            self.push(ident)
             self.optionalFormalParameterList()
         else:
             self.error()
@@ -156,7 +160,9 @@ class Parser(object):
     def functionHeading(self):
         if self.lookahead is "MP_FUNCTION":  # 18 FunctionHeading -> "function" functionIdentifier OptionalFormalParameterList ":" Type
             self.match("MP_FUNCTION")
-            self.functionIdentifier()
+            ident = self.functionIdentifier()
+            self.insertEntry('function', 'var', ident)
+            self.push(ident)
             self.optionalFormalParameterList()
             self.match("MP_COLON")
             self.type()
@@ -201,9 +207,12 @@ class Parser(object):
     
     def valueParameterSection(self):
         if self.lookahead is 'MP_IDENTIFIER':  # 25 ValueParameterSection -> IdentifierList ":" Type
-            self.identifierList()
+            identList = []
+            identList = self.identifierList();
             self.match('MP_COLON')
-            self.type()
+            type = self.type()
+            for ident in identList:
+                self.insertEntry(type, 'var', ident)
         else:
             self.error()
     
@@ -211,9 +220,13 @@ class Parser(object):
     def variableParameterSection(self):
         if self.lookahead is 'MP_VAR':  # 26 VariableParameterSection -> "var" IdentifierList ":" Type
             self.match('MP_VAR')
-            self.identifierList();
+            identList = []
+            identList = self.identifierList();
             self.match('MP_COLON')
-            self.type()
+            type = self.type()
+            for ident in identList:
+                self.insertEntry(type, 'var', ident)
+            
         else:
             self.error()
     
@@ -230,6 +243,8 @@ class Parser(object):
             self.match('MP_BEGIN')
             self.statementSequence()
             self.match('MP_END')
+            self.printTable()
+            self.symbolTableStack.pop()
         else:
             self.error()
     
@@ -662,7 +677,7 @@ class Parser(object):
         if self.lookahead in ['MP_INTEGER_LIT']:  # 95 Factor -> UnsignedInteger
             self.match('MP_INTEGER_LIT')
         elif self.lookahead is 'MP_IDENTIFIER':  # 96 Factor -> VariableIdentifier  OR  # 99 Factor -> FunctionIdentifier OptionalActualParameterList
-#            self.variableIdentifier()
+        # self.variableIdentifier()
             self.functionIdentifier()
             self.optionalActualParameterList()
         elif self.lookahead is 'MP_NOT':  # 97 Factor -> "not" Factor    
@@ -677,9 +692,9 @@ class Parser(object):
     
     def programIdentifier(self): 
         if(self.lookahead == "MP_IDENTIFIER"):  # 100 ProgramIdentifier -> Identifier
-            self.symbolTableStack.append(SymbolTable(self.scanner.lexeme))
+            ident = self.scanner.lexeme
             self.match("MP_IDENTIFIER")
-            return id
+            return ident
         else:
             self.error()
     
@@ -693,16 +708,18 @@ class Parser(object):
     
     def procedureIdentifier(self): 
         if(self.lookahead == "MP_IDENTIFIER"):  # 102 ProcedureIdentifier -> Identifier
-            self.push()
+            ident = self.scanner.lexeme
             self.match("MP_IDENTIFIER")
+            return ident
         else:
             self.error()
     
     
     def functionIdentifier(self): 
         if(self.lookahead == "MP_IDENTIFIER"):  # 103 FunctionIdentifier -> Identifier   
-            self.push()
+            ident = self.scanner.lexeme
             self.match("MP_IDENTIFIER")
+            return ident
         else:
             self.error()
     
@@ -723,20 +740,22 @@ class Parser(object):
     
     def identifierList(self):
         if(self.lookahead == "MP_IDENTIFIER"):  # 106 IdentifierList -> Identifier IdentifierTail
-            id = self.scanner.lexeme
+            ident = []
+            ident.append(self.scanner.lexeme)
             self.match("MP_IDENTIFIER")
-            self.identifierTail()
-            return id
+            self.identifierTail(ident)
+            return ident
         else:
             self.error()
     
      
      
-    def identifierTail(self): 
+    def identifierTail(self,ident): 
         if(self.lookahead == "MP_COMMA"):  # 107 IdentifierTail -> "," Identifier IdentifierTail   
             self.match("MP_COMMA")
+            ident.append(self.scanner.lexeme)
             self.match("MP_IDENTIFIER")
-            self.identifierTail()
+            self.identifierTail(ident)
         elif(self.lookahead == "MP_COLON"):  # 108 IdentifierTail -> lambda
             return
         else:
@@ -754,24 +773,23 @@ class Parser(object):
         # print the caller
         sys.exit()
         
-    def printStack(self):
-        print "\nStack:\n    "
-        for i, table in enumerate(reversed(self.symbolTableStack)):
-            print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')
-            print '{0:<1s}{1:^34s}{0:<1s}'.format('|', table.name)
-            print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')
-            print '{0:<1s} {1:10s} {2:10s} {3:10s} {0:<1s}'.format('|', 'Id', 'Type', 'Kind')
-            print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')
-            for entry in table.entries:
-                print '{0:<1s} {1:10s} {2:10s} {3:10s} {0:<1s}'.format('|', entry['id'], entry['type'], entry['kind'])
-            print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')+"\n"
+    def printTable(self):
+        table = self.symbolTableStack[len(self.symbolTableStack)-1]
+        print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')
+        print '{0:<1s}{1:^34s}{0:<1s}'.format('|', table.name)
+        print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')
+        print '{0:<1s} {1:10s} {2:10s} {3:10s} {0:<1s}'.format('|', 'Id', 'Type', 'Kind')
+        print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')
+        for entry in table.entries:
+            print '{0:<1s} {1:10s} {2:10s} {3:10s} {0:<1s}'.format('|', entry['id'], entry['type'], entry['kind'])
+        print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')+"\n"
                        
 
-    def push(self):
-        self.symbolTableStack.append(SymbolTable(self.scanner.lexeme))
+    def push(self, ident):  
+        self.symbolTableStack.append(SymbolTable(ident))
         
-    def insert(self, type, kind, id = None,):
-        self.symbolTableStack[-1].insert(self.scanner.lexeme if id == None else id, type, kind)
+    def insertEntry(self, type, kind, ident):
+        self.symbolTableStack[len(self.symbolTableStack)-1].insert(ident, type, kind)
         
         
         
