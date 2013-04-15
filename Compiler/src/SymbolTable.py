@@ -7,7 +7,11 @@ Created on Mar 1, 2013
 
 class SymbolTable(object):
     
-    name = '';
+    name = ''
+    label = ''
+    nest = 0
+    next = None
+    size = 0
     
     entries = []
     
@@ -15,8 +19,8 @@ class SymbolTable(object):
         self.name = name
         self.entries = []
     
-    def insert(self, id, type, kind):
-        self.entries.append({"id":id,"type":type, "kind":kind})
+    def insert(self, name, kind, type, size, offset, label):
+        self.entries.append({"name":name, "kind":kind, "type":type, "size":size, "offset":offset, "label":label})
         
     def find(self, id):
         for entry in self.entries:

@@ -1,5 +1,5 @@
 import sys
-import inspect
+# import inspect
 
 from SymbolTable import SymbolTable 
 from Scanner import Scanner
@@ -94,8 +94,8 @@ class Parser(object):
             idList = self.identifierList()
             self.match("MP_COLON")
             type = self.type()
-            for ident in idList:
-                self.insertEntry(type, 'var', ident)
+            for name in idList:
+                self.insertEntry(name, 'var', type)
         else:
             self.error()
     
@@ -149,9 +149,9 @@ class Parser(object):
     def procedureHeading(self):
         if self.lookahead is "MP_PROCEDURE":  # 17 ProcedureHeading -> "procedure" procedureIdentifier OptionalFormalParameterList
             self.match("MP_PROCEDURE")
-            ident = self.procedureIdentifier()
-            self.insertEntry('procedure', 'var', ident)
-            self.push(ident)
+            name = self.procedureIdentifier()
+            self.insertEntry(name, 'procedure')
+            self.push(name)
             self.optionalFormalParameterList()
         else:
             self.error()
@@ -160,9 +160,9 @@ class Parser(object):
     def functionHeading(self):
         if self.lookahead is "MP_FUNCTION":  # 18 FunctionHeading -> "function" functionIdentifier OptionalFormalParameterList ":" Type
             self.match("MP_FUNCTION")
-            ident = self.functionIdentifier()
-            self.insertEntry('function', 'var', ident)
-            self.push(ident)
+            name = self.functionIdentifier()
+            self.insertEntry(name, 'function')
+            self.push(name)
             self.optionalFormalParameterList()
             self.match("MP_COLON")
             self.type()
@@ -211,8 +211,8 @@ class Parser(object):
             identList = self.identifierList();
             self.match('MP_COLON')
             type = self.type()
-            for ident in identList:
-                self.insertEntry(type, 'var', ident)
+            for name in identList:
+                self.insertEntry(name, 'var', type)
         else:
             self.error()
     
@@ -224,8 +224,8 @@ class Parser(object):
             identList = self.identifierList();
             self.match('MP_COLON')
             type = self.type()
-            for ident in identList:
-                self.insertEntry(type, 'var', ident)
+            for name in identList:
+                self.insertEntry(name, 'var', type)
             
         else:
             self.error()
@@ -243,7 +243,7 @@ class Parser(object):
             self.match('MP_BEGIN')
             self.statementSequence()
             self.match('MP_END')
-            self.printTable()
+            self.printTableStack()
             self.symbolTableStack.pop()
         else:
             self.error()
@@ -764,7 +764,7 @@ class Parser(object):
     def error(self):
         print "Syntax error found on line " + str(self.scanner.getLineNumber()) + ", column " + str(self.scanner.getColumnNumber())
         # print the caller
-        print inspect.stack()[1][3]
+#         print inspect.stack()[1][3]
         sys.exit()
         
     def matchError(self, expected):
@@ -773,23 +773,40 @@ class Parser(object):
         # print the caller
         sys.exit()
         
-    def printTable(self):
+    def printTableStack(self):
         table = self.symbolTableStack[len(self.symbolTableStack)-1]
-        print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')
-        print '{0:<1s}{1:^34s}{0:<1s}'.format('|', table.name)
-        print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')
-        print '{0:<1s} {1:10s} {2:10s} {3:10s} {0:<1s}'.format('|', 'Id', 'Type', 'Kind')
-        print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')
+        print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')
+        print '{0:<1s}{1:^67s}{0:<1s}'.format('|', table.name)
+        print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')
+        print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:10s} {5:10s} {6:10s} {0:<1s}'.format('|', 'Name', 'Kind', 'Type', 'Size', 'Offset', 'Label')
+        print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')
         for entry in table.entries:
-            print '{0:<1s} {1:10s} {2:10s} {3:10s} {0:<1s}'.format('|', entry['id'], entry['type'], entry['kind'])
-        print '{0:1s}{1:-<34}{0:1s}'.format('+', '-')+"\n"
+            print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:<10d} {5:<10d} {6:10s} {0:<1s}'.format('|', entry['name'], entry['kind'], entry['type'], entry['size'], entry['offset'], entry['label'])
+        print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')+"\n"
                        
 
-    def push(self, ident):  
-        self.symbolTableStack.append(SymbolTable(ident))
+    def push(self, name):  
+        self.symbolTableStack.append(SymbolTable(name))
         
-    def insertEntry(self, type, kind, ident):
-        self.symbolTableStack[len(self.symbolTableStack)-1].insert(ident, type, kind)
+    def insertEntry(self, name, kind, type = "", size= 0, offset = 0, label = ""):
+        table = self.symbolTableStack[len(self.symbolTableStack)-1]
         
+        if kind == 'var':
+            if type == 'Integer':
+                size = 4
+            elif type == 'Float':
+                size = 8
+            elif type == 'Character':
+                size = 1
+        
+        
+            if len(table.entries) > 0:
+                
+                previous_size = table.entries[-1]['size']
+                previous_offset = table.entries[-1]['offset']
+                offset = previous_size + previous_offset
+            
+        
+        table.insert(name, kind, type, size, offset, label)       
         
         

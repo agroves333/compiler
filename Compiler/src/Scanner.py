@@ -44,7 +44,7 @@ class Scanner(object):
             self.line = self.line_internal
             self.col = self.col_internal
          
-            #BEGINNING OF DISPATCHER
+            # BEGINNING OF DISPATCHER
             if(nextChar == "."): self._scanPeriod()
         
             elif(nextChar == ","): self._scanComma()
