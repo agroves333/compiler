@@ -787,12 +787,12 @@ class Parser(object):
 
     def push(self, name, nest=0, size=0, next=None):
         label = 'L1' if name == 'Main' else ''
-        
+        nest = len(self.symbolTableStack)
         
         self.symbolTableStack.append(SymbolTable(name, label, nest, size, next))
         
     def insertEntry(self, name, kind, type = "", size= 0, offset = 0, label = ""):
-        table = self.symbolTableStack[len(self.symbolTableStack)-1]
+        table = self.symbolTableStack[-1]
         
         if kind == 'var':
             if type == 'Integer':
