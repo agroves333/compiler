@@ -10,13 +10,16 @@ class SymbolTable(object):
     name = ''
     label = ''
     nest = 0
-    next = None
     size = 0
-    
+    next = None
     entries = []
     
-    def __init__(self, name):
+    def __init__(self, name, label, nest, size, next):
         self.name = name
+        self.label = label
+        self.nest = nest
+        self.size = size
+        self.next = next
         self.entries = []
     
     def insert(self, name, kind, type, size, offset, label):

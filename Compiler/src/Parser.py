@@ -49,8 +49,8 @@ class Parser(object):
     def programHeading(self):
         if self.lookahead is "MP_PROGRAM":  # 3 ProgramHeading -> "program" ProgramIdentifier
             self.match("MP_PROGRAM")
-            ident = self.programIdentifier()
-            self.push(ident)
+            name = self.programIdentifier()
+            self.push('Main')
         else:
             self.error()
     
@@ -775,9 +775,9 @@ class Parser(object):
         
     def printTableStack(self):
         table = self.symbolTableStack[len(self.symbolTableStack)-1]
-        print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')
-        print '{0:<1s}{1:^67s}{0:<1s}'.format('|', table.name)
-        print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')
+        print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
+        print '{0:<1s} {1:10s} {2:10s} {3:<10s} {4:<10s} {5:10s} {0:>11s}'.format('|', table.name, 'Label: '+ table.label, 'Nest: '+ str(table.nest), 'Size: '+ str(table.size), 'Next-> '+ str(table.next))
+        print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
         print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:10s} {5:10s} {6:10s} {0:<1s}'.format('|', 'Name', 'Kind', 'Type', 'Size', 'Offset', 'Label')
         print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')
         for entry in table.entries:
@@ -785,8 +785,11 @@ class Parser(object):
         print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')+"\n"
                        
 
-    def push(self, name):  
-        self.symbolTableStack.append(SymbolTable(name))
+    def push(self, name, nest=0, size=0, next=None):
+        label = 'L1' if name == 'Main' else ''
+        
+        
+        self.symbolTableStack.append(SymbolTable(name, label, nest, size, next))
         
     def insertEntry(self, name, kind, type = "", size= 0, offset = 0, label = ""):
         table = self.symbolTableStack[len(self.symbolTableStack)-1]
@@ -801,7 +804,6 @@ class Parser(object):
         
         
             if len(table.entries) > 0:
-                
                 previous_size = table.entries[-1]['size']
                 previous_offset = table.entries[-1]['offset']
                 offset = previous_size + previous_offset
