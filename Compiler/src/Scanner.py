@@ -175,7 +175,7 @@ class Scanner(object):
         self.col_internal += 1
         self.sourceFile.read(1)
 
-    def _scanTimes(self):
+    def _scanSlash(self):
         self.token = "MP_SLASH"
         self.lexeme = "/"
         self.col_internal += 1
