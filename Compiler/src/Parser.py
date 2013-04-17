@@ -12,6 +12,7 @@ class Parser(object):
     sourceFile = None
     symbolTableStack = []
     lookahead = ''
+    label = 0
     
     
     # Constructor
@@ -258,7 +259,12 @@ class Parser(object):
             self.statementSequence()
             self.match('MP_END')
             self.printTableStack()
+            name = self.symbolTableStack[-1].name
+            label = 'L' + str(self.label)
             self.symbolTableStack.pop()
+            if (len(self.symbolTableStack) != 0):
+                self.symbolTableStack[-1].setLabel(name, label)
+                self.label += 1
         else:
             self.error()
     
@@ -833,7 +839,7 @@ class Parser(object):
     def printTableStack(self):
         table = self.symbolTableStack[len(self.symbolTableStack)-1]
         print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
-        print '{0:<1s} {1:10s} {2:10s} {3:<10s} {4:<10s} {5:10s} {0:>11s}'.format('|', table.name, 'Label: '+ table.label, 'Nest: '+ str(table.nest), 'Size: '+ str(table.size), 'Next-> '+ str(table.next))
+        print '{0:<1s} {1:10s} {2:10s} {3:<10s} {4:10s} {0:>21s}'.format('|', table.name, 'Nest: '+ str(table.nest), 'Size: '+ str(table.size), 'Next-> '+ str(table.next))
         print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
         print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:10s} {5:10s} {6:10s} {0:<1s}'.format('|', 'Name', 'Kind', 'Type', 'Size', 'Offset', 'Label')
         print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')
@@ -843,10 +849,10 @@ class Parser(object):
                        
 
     def push(self, name, nest=0, size=0, next=None):
-        label = 'L1' if name == 'Main' else ''
         nest = len(self.symbolTableStack)
-        
-        self.symbolTableStack.append(SymbolTable(name, label, nest, size, next))
+        if nest != 0:
+            self.symbolTableStack[-1].setNext(name)
+        self.symbolTableStack.append(SymbolTable(name, nest, size, next))
         
     def insertEntry(self, name, kind, type = "", size= 0, offset = 0, label = ""):
         table = self.symbolTableStack[-1]
@@ -865,7 +871,7 @@ class Parser(object):
                 previous_offset = table.entries[-1]['offset']
                 offset = previous_size + previous_offset
             
-        
-        table.insert(name, kind, type, size, offset, label)       
+        table.insert(name, kind, type, size, offset, label)     
+        table.increaseSize(size)  
         
         

@@ -14,9 +14,8 @@ class SymbolTable(object):
     next = None
     entries = []
     
-    def __init__(self, name, label, nest, size, next):
+    def __init__(self, name, nest, size, next):
         self.name = name
-        self.label = label
         self.nest = nest
         self.size = size
         self.next = next
@@ -25,7 +24,18 @@ class SymbolTable(object):
     def insert(self, name, kind, type, size, offset, label):
         self.entries.append({"name":name, "kind":kind, "type":type, "size":size, "offset":offset, "label":label})
         
-    def find(self, id):
+    def increaseSize(self, size):
+        self.size += size
+        
+    def setNext(self, next):
+        self.next = next
+    
+    def setLabel(self, name, label):
         for entry in self.entries:
-            if entry.has_key(id):
-                return entry[id]
+            if entry['name'] == name:
+                entry['label'] = label
+        
+    def find(self, name):
+        for entry in self.entries:
+            if entry['name'] == name:
+                return entry
