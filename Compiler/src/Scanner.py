@@ -1,4 +1,3 @@
-
 class Scanner(object):
 
     lexeme = ""
@@ -62,6 +61,8 @@ class Scanner(object):
             elif(nextChar == "-"): self._scanMinus()
         
             elif(nextChar == "*"): self._scanTimes()
+
+            elif(nextChar == '/'): self._scanSlash()
 
             elif(nextChar == ":"): self._scanColonOrAssignOp()
             
@@ -174,6 +175,11 @@ class Scanner(object):
         self.col_internal += 1
         self.sourceFile.read(1)
 
+    def _scanTimes(self):
+        self.token = "MP_SLASH"
+        self.lexeme = "/"
+        self.col_internal += 1
+        self.sourceFile.read(1)
 
     def _scanColonOrAssignOp(self):
         state = 0
@@ -532,4 +538,9 @@ class Scanner(object):
                     'until':'MP_UNTIL',
                     'var':'MP_VAR',
                     'while':'MP_WHILE',
-                    'write':'MP_WRITE'}
+                    'write':'MP_WRITE',
+                    'true':'MP_BOOLEAN_LIT',
+                    'false': 'MP_BOOLEAN_LIT',
+                    'string': 'MP_STRING',
+                    'boolean': 'MP_BOOLEAN',
+                    'writeln': 'MP_WRITELN'}
