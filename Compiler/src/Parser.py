@@ -59,7 +59,7 @@ class Parser(object):
     def programHeading(self):
         if self.lookahead is "MP_PROGRAM":  # 3 ProgramHeading -> "program" ProgramIdentifier
             self.match("MP_PROGRAM")
-         #   name = self.programIdentifier()  --> currently unused?
+            self.programIdentifier()
             self.push('Main')
         else:
             self.error()
