@@ -3,22 +3,32 @@ import sys
 
 from SymbolTable import SymbolTable 
 from Scanner import Scanner
+from Analyzer import Analyzer
 
 class Parser(object):
 
     scanner = None
+    analyzer = None
+    sourceFile = None
     symbolTableStack = []
     lookahead = ''
     
     
     # Constructor
-    def __init__(self, sourceFile):
-        self.scanner = Scanner(sourceFile)
+    def __init__(self, fileName):
+        try:
+            self.sourceFile = open(fileName, 'r')
+        except IOError:
+            sys.exit("Source file not found")
+            
+        self.scanner = Scanner(self.sourceFile)
+        self.analyzer = Analyzer(fileName)
 
     def parse(self):
         self.lookahead = self.scanner.getNextToken()
         self.systemGoal()
         print "Parsing Successful"
+        self.sourceFile.close()
 
     def match(self, toMatch):
 #        print toMatch + " " + self.scanner.lexeme
@@ -49,7 +59,7 @@ class Parser(object):
     def programHeading(self):
         if self.lookahead is "MP_PROGRAM":  # 3 ProgramHeading -> "program" ProgramIdentifier
             self.match("MP_PROGRAM")
-            name = self.programIdentifier()
+         #   name = self.programIdentifier()  --> currently unused?
             self.push('Main')
         else:
             self.error()
@@ -93,9 +103,9 @@ class Parser(object):
         if self.lookahead is "MP_IDENTIFIER":  # 8 VariableDeclaration -> IdentifierList ":" Type  
             idList = self.identifierList()
             self.match("MP_COLON")
-            type = self.type()
+            varType = self.type()
             for name in idList:
-                self.insertEntry(name, 'var', type)
+                self.insertEntry(name, 'var', varType)
         else:
             self.error()
     
@@ -214,9 +224,9 @@ class Parser(object):
             identList = []
             identList = self.identifierList();
             self.match('MP_COLON')
-            type = self.type()
+            varType = self.type()
             for name in identList:
-                self.insertEntry(name, 'var', type)
+                self.insertEntry(name, 'var', varType)
         else:
             self.error()
     
@@ -227,9 +237,9 @@ class Parser(object):
             identList = []
             identList = self.identifierList();
             self.match('MP_COLON')
-            type = self.type()
+            varType = self.type()
             for name in identList:
-                self.insertEntry(name, 'var', type)
+                self.insertEntry(name, 'var', varType)
             
         else:
             self.error()
