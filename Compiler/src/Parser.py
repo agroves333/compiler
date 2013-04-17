@@ -660,7 +660,7 @@ class Parser(object):
                            'MP_IDENTIFIER', 'MP_NOT',
                            'MP_INTEGER_LIT', 'MP_FLOAT_LIT',
                            'MP_STRING_LIT', 'MP_TRUE',
-                           'MP_FALSE'],:
+                           'MP_FALSE']:
             self.factor()
             self.factorTail()
         else:
