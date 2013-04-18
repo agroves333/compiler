@@ -23,9 +23,7 @@ class SymbolTable(object):
     
     def insert(self, name, kind, type, size, offset, label):
         self.entries.append({"name":name, "kind":kind, "type":type, "size":size, "offset":offset, "label":label})
-        
-    def increaseSize(self, size):
-        self.size += size
+        self.size += size 
         
     def setNext(self, next):
         self.next = next
