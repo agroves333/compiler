@@ -1,7 +1,7 @@
 import sys
 # import inspect
 
-from SymbolTable import SymbolTable 
+from SymbolTable import SymbolTable
 from Scanner import Scanner
 from Analyzer import Analyzer
 
@@ -32,9 +32,10 @@ class Parser(object):
         self.sourceFile.close()
 
     def match(self, toMatch):
-#        print toMatch + " " + self.scanner.lexeme
+        lexeme = self.scanner.lexeme
         if(self.lookahead == toMatch):
             self.lookahead = self.scanner.getNextToken()
+            return lexeme
         else:
             # print the caller
 #            print inspect.stack()[1][3]
@@ -258,7 +259,7 @@ class Parser(object):
             self.match('MP_BEGIN')
             self.statementSequence()
             self.match('MP_END')
-            self.printTableStack()
+#             self.printTableStack()
             self.symbolTableStack.pop()
         else:
             self.error()
@@ -716,10 +717,14 @@ class Parser(object):
     def factor(self):
         #TODO: ambiguity of identifier, 94 and 97, if its not correct
         if self.lookahead in ['MP_INTEGER_LIT']:  # 93 Factor -> UnsignedInteger
-            self.match('MP_INTEGER_LIT')
+            print self.match('MP_INTEGER_LIT')
         elif self.lookahead is 'MP_IDENTIFIER':  # 94 Factor -> VariableIdentifier  OR  # 97 Factor -> FunctionIdentifier OptionalActualParameterList
-        # self.variableIdentifier()
-            self.functionIdentifier()
+            id_kind = self.getIdKind(self.scanner.lexeme)
+            if id_kind == "function":
+                self.functionIdentifier()
+            elif id_kind == "var":
+                self.variableIdentifier()
+            
             self.optionalActualParameterList()
         elif self.lookahead is 'MP_NOT':  # 95 Factor -> "not" Factor
             self.match('MP_NOT');
@@ -749,7 +754,7 @@ class Parser(object):
     
     def variableIdentifier(self): 
         if(self.lookahead == "MP_IDENTIFIER"):  # 99 VariableIdentifier -> Identifier
-            self.match("MP_IDENTIFIER")
+            print self.match("MP_IDENTIFIER")
         else:
             self.error()
     
@@ -831,6 +836,14 @@ class Parser(object):
         # print the caller
         sys.exit()
         
+        
+    def getIdKind(self, id):
+        for table in self.symbolTableStack[::-1]: # reversed the symbolTableStack so we can search from the most local scope first
+            result = table.find(id)
+            if(result != None):
+                return result['kind']
+        
+    
     def printTableStack(self):
         table = self.symbolTableStack[len(self.symbolTableStack)-1]
         print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
