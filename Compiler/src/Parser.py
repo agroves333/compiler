@@ -3,7 +3,6 @@ import sys
 
 from SymbolTable import SymbolTable
 from Scanner import Scanner
-from Analyzer import Analyzer
 
 class Parser(object):
 
@@ -34,7 +33,7 @@ class Parser(object):
     def match(self, toMatch):
         lexeme = self.scanner.lexeme
         if(self.lookahead == toMatch):
-            self.lookahead = self.scanner.getNextToken()
+            self.lookahead = self.scanner.getNextToken()            
             return lexeme
         else:
             # print the caller
@@ -257,9 +256,11 @@ class Parser(object):
     def compoundStatement(self):
         if self.lookahead is 'MP_BEGIN':  # 26 CompoundStatement -> "begin" StatementSequence "end"
             self.match('MP_BEGIN')
+            self.analyzer.output("add SP,"+str(self.symbolTableStack[-1].size)+",SP")
             self.statementSequence()
             self.match('MP_END')
 #             self.printTableStack()
+            self.analyzer.output("sub SP,"+str(self.symbolTableStack[-1].size)+",SP")
             self.symbolTableStack.pop()
         else:
             self.error()
@@ -309,9 +310,6 @@ class Parser(object):
             self.repeatStatement()
         elif self.lookahead is 'MP_FOR':  # 28 Statement -> ForStatement
             self.forStatement()
-        elif self.lookahead is 'MP_IDENTIFIER':  # 39 Statement -> ProcedureStatement   OR  # 34 Statement -> AssignmentStatement
-            self.procedureStatement()  
-#            self.assignmentStatement()
         else:
             self.error()
     
@@ -393,10 +391,19 @@ class Parser(object):
     
     
     def assignmentStatement(self):
+        # semantic records
+        expressionRec = {"type":''}
+        identRec = {"name":''}
+        
         if self.lookahead is 'MP_IDENTIFIER':  # 49 AssignmentStatement -> VariableIdentifier ":=" Expression  OR
-            self.variableIdentifier()
+            
+            id = self.variableIdentifier()
+            identRec = self.analyzer.processId(id)
             self.match('MP_ASSIGN')
-            self.expression()
+            expressionRec["type"] = self.expression()
+#             print expressionRec["type"]
+            self.analyzer.genAssign(identRec, expressionRec)
+            
         # This doesn't change parsing functionality
         # elif self.lookahead is 'MP_IDENTIFIER':   # 50 AssignmentStatement -> FunctionIdentifier ":=" Expression
         #    self.functionIdentifier()
@@ -569,6 +576,7 @@ class Parser(object):
                               'MP_TRUE', 'MP_FALSE']:
             self.simpleExpression()
             self.optionalRelationalPart()
+            return self.mapTokenToType(self.lookahead)
         else:
             self.error()
          
@@ -610,24 +618,32 @@ class Parser(object):
     
     
     def simpleExpression(self):
+        termRec = {}
         if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',   # 77 SimpleExpression -> OptionalSign Term TermTail
                               'MP_PLUS', 'MP_MINUS',
                               'MP_FLOAT_LIT', 'MP_STRING_LIT'
                               'MP_NOT', 'MP_INTEGER_LIT'
                               'MP_TRUE', 'MP_FALSE']:
             self.optionalSign()
-            self.term()
-            self.termTail()
+            termRec["type"] = self.term()
+            self.termTail(termRec["type"] )
         else:
             self.error()
             
     
     
-    def termTail(self):
+    def termTail(self, termTailRec = {}):
+        # Semantic Records
+        addopRec = {}
+        termRec = {}
+        
         if self.lookahead in ['MP_PLUS', 'MP_MINUS', 'MP_OR']:  # 78 TermTail -> AddingOperator Term TermTail
-            self.addingOperator()
-            self.term()
-            self.termTail()
+            addopRec["lexeme"] = self.addingOperator()
+            termRec["type"] = self.term()
+            resultRec = self.analyzer.genArithmetic(termTailRec, addopRec, termRec)
+            self.termTail(resultRec)
+            termTailRec = resultRec
+            
         elif self.lookahead in ['MP_SCOLON', 'MP_RPAREN', 'MP_END',  # 79 TermTail -> lambda
                                 'MP_COMMA', 'MP_THEN', 'MP_ELSE',
                                 'MP_UNTIL', 'MP_DO', 'MP_TO',
@@ -657,24 +673,27 @@ class Parser(object):
     
     def addingOperator(self):
         if self.lookahead is 'MP_PLUS':  # 83 AddingOperator -> "+"
-            self.match('MP_PLUS')
+            return self.match('MP_PLUS')
         elif self.lookahead is 'MP_MINUS':  # 84 AddingOperator -> "-"
-            self.match('MP_MINUS')
+            return self.match('MP_MINUS')
         elif self.lookahead is 'MP_OR':  # 85 AddingOperator -> "or"
-            self.match('MP_OR')
+            return self.match('MP_OR')
         else:
             self.error()
             
     
     
     def term(self):
+        
         if self.lookahead in ['MP_LPAREN',  # 86 Term -> Factor FactorTail
                            'MP_IDENTIFIER', 'MP_NOT',
                            'MP_INTEGER_LIT', 'MP_FLOAT_LIT',
                            'MP_STRING_LIT', 'MP_TRUE',
                            'MP_FALSE']:
+            
             self.factor()
             self.factorTail()
+            return self.mapTokenToType(self.lookahead)
         else:
             self.error()
             
@@ -717,15 +736,18 @@ class Parser(object):
     def factor(self):
         #TODO: ambiguity of identifier, 94 and 97, if its not correct
         if self.lookahead in ['MP_INTEGER_LIT']:  # 93 Factor -> UnsignedInteger
-            print self.match('MP_INTEGER_LIT')
+            self.match('MP_INTEGER_LIT')
+        
         elif self.lookahead is 'MP_IDENTIFIER':  # 94 Factor -> VariableIdentifier  OR  # 97 Factor -> FunctionIdentifier OptionalActualParameterList
-            id_kind = self.getIdKind(self.scanner.lexeme)
+            id_kind = self.analyzer.processId(self.scanner.lexeme)["kind"]
             if id_kind == "function":
-                self.functionIdentifier()
+                id = self.functionIdentifier()
             elif id_kind == "var":
-                self.variableIdentifier()
+                id = self.variableIdentifier()
             
             self.optionalActualParameterList()
+            return id
+        
         elif self.lookahead is 'MP_NOT':  # 95 Factor -> "not" Factor
             self.match('MP_NOT');
             self.factor()
@@ -745,34 +767,28 @@ class Parser(object):
 
     def programIdentifier(self):
         if(self.lookahead == "MP_IDENTIFIER"):  # 98 ProgramIdentifier -> Identifier
-            ident = self.scanner.lexeme
-            self.match("MP_IDENTIFIER")
-            return ident
+            return self.match("MP_IDENTIFIER")
         else:
             self.error()
     
     
     def variableIdentifier(self): 
         if(self.lookahead == "MP_IDENTIFIER"):  # 99 VariableIdentifier -> Identifier
-            print self.match("MP_IDENTIFIER")
+            return self.match("MP_IDENTIFIER")
         else:
             self.error()
     
     
     def procedureIdentifier(self): 
         if(self.lookahead == "MP_IDENTIFIER"):  # 100 ProcedureIdentifier -> Identifier
-            ident = self.scanner.lexeme
-            self.match("MP_IDENTIFIER")
-            return ident
+            return self.match("MP_IDENTIFIER")
         else:
             self.error()
     
     
     def functionIdentifier(self): 
         if(self.lookahead == "MP_IDENTIFIER"):  # 101 FunctionIdentifier -> Identifier
-            ident = self.scanner.lexeme
-            self.match("MP_IDENTIFIER")
-            return ident
+            return self.match("MP_IDENTIFIER")
         else:
             self.error()
     
@@ -836,13 +852,7 @@ class Parser(object):
         # print the caller
         sys.exit()
         
-        
-    def getIdKind(self, id):
-        for table in self.symbolTableStack[::-1]: # reversed the symbolTableStack so we can search from the most local scope first
-            result = table.find(id)
-            if(result != None):
-                return result['kind']
-        
+ 
     
     def printTableStack(self):
         table = self.symbolTableStack[len(self.symbolTableStack)-1]
@@ -880,5 +890,18 @@ class Parser(object):
                 offset = previous_size + previous_offset
   
         table.insert(name, kind, type, size, offset, label)     
+       
+    def mapTokenToType(self, token):
+        if token == 'MP_INTEGER_LIT':
+            return "Integer"
+        if token == 'MP_FLOAT_LIT':
+            return "Float"
+        if token == 'MP_FIXED_LIT':
+            return "Fixed"
+        if token in ['MP_FALSE', 'MP_TRUE', 'MP_NOT']:
+            return "Boolean"
+        if token == 'MP_STRING_LIT':
+            return "String"
         
-        
+
+from Analyzer import Analyzer       
