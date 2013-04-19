@@ -21,6 +21,30 @@ class Scanner(object):
             return False
         else:
             return True
+
+    def peekNextToken(self):
+        """
+        return next token while keeping all Scanner fields unchanged
+        """
+        lexeme = self.lexeme
+        token = self.token
+        line_internal = self.line_internal
+        col_internal = self.col_internal
+        line = self.line
+        col = self.col
+        file_location = self.sourceFile.tell()
+
+        return_token = self.getNextToken()
+
+        self.sourceFile.seek(file_location, 0)
+        self.lexeme = lexeme
+        self.token = token
+        self.line_internal = line_internal
+        self.col_internal = col_internal
+        self.line = line
+        self.col = col
+
+        return return_token
     
     def getNextToken(self):
         self.token = ""
@@ -539,8 +563,8 @@ class Scanner(object):
                     'var':'MP_VAR',
                     'while':'MP_WHILE',
                     'write':'MP_WRITE',
-                    'true':'MP_BOOLEAN_LIT',
-                    'false': 'MP_BOOLEAN_LIT',
+                    'true':'MP_TRUE',
+                    'false': 'MP_FALSE',
                     'string': 'MP_STRING',
                     'boolean': 'MP_BOOLEAN',
                     'writeln': 'MP_WRITELN'}
