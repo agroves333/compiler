@@ -21,7 +21,7 @@ class Parser(object):
             self.sourceFile = open(fileName, 'r')
         except IOError:
             sys.exit("Source file not found")
-            
+
         self.scanner = Scanner(self.sourceFile)
         self.analyzer = Analyzer(fileName)
 
@@ -384,8 +384,8 @@ class Parser(object):
     def writeParameter(self):
         if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',  # 48 WriteParameter -> OrdinalExpression
                               'MP_PLUS', 'MP_MINUS',
-                              'MP_FLOAT_LIT', 'MP_STRING_LIT'
-                              'MP_NOT', 'MP_INTEGER_LIT'
+                              'MP_FLOAT_LIT', 'MP_STRING_LIT',
+                              'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
             self.ordinalExpression()
         else:
@@ -479,8 +479,8 @@ class Parser(object):
     def initialValue(self):
         if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',  # 58 InitialValue -> OrdinalExpression
                               'MP_PLUS', 'MP_MINUS',
-                              'MP_FLOAT_LIT', 'MP_STRING_LIT'
-                              'MP_NOT', 'MP_INTEGER_LIT'
+                              'MP_FLOAT_LIT', 'MP_STRING_LIT',
+                              'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
             self.ordinalExpression()
         else:
@@ -552,8 +552,8 @@ class Parser(object):
     def actualParameter(self):
         if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',   # 67 ActualParameter -> OrdinalExpression
                               'MP_PLUS', 'MP_MINUS',
-                              'MP_FLOAT_LIT', 'MP_STRING_LIT'
-                              'MP_NOT', 'MP_INTEGER_LIT'
+                              'MP_FLOAT_LIT', 'MP_STRING_LIT',
+                              'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
             self.ordinalExpression()
         else:
@@ -564,8 +564,8 @@ class Parser(object):
     def expression(self):
         if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',   # 68 Expression -> SimpleExpression OptionalRelationalPart
                               'MP_PLUS', 'MP_MINUS',
-                              'MP_FLOAT_LIT', 'MP_STRING_LIT'
-                              'MP_NOT', 'MP_INTEGER_LIT'
+                              'MP_FLOAT_LIT', 'MP_STRING_LIT',
+                              'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
             self.simpleExpression()
             self.optionalRelationalPart()
@@ -612,8 +612,8 @@ class Parser(object):
     def simpleExpression(self):
         if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',   # 77 SimpleExpression -> OptionalSign Term TermTail
                               'MP_PLUS', 'MP_MINUS',
-                              'MP_FLOAT_LIT', 'MP_STRING_LIT'
-                              'MP_NOT', 'MP_INTEGER_LIT'
+                              'MP_FLOAT_LIT', 'MP_STRING_LIT',
+                              'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
             self.optionalSign()
             self.term()
@@ -646,7 +646,7 @@ class Parser(object):
         elif self.lookahead is 'MP_MINUS':  # 81 OptionalSign -> "-"
             self.match('MP_MINUS')
         elif self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',  # 82 OptionalSign -> lambda
-                                'MP_NOT', 'MP_INTEGER_LIT'
+                                'MP_NOT', 'MP_INTEGER_LIT',
                                 'MP_FLOAT_LIT', 'MP_STRING_LIT',
                                 'MP_TRUE', 'MP_FALSE']:
             return

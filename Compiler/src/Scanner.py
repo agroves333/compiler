@@ -563,8 +563,8 @@ class Scanner(object):
                     'var':'MP_VAR',
                     'while':'MP_WHILE',
                     'write':'MP_WRITE',
-                    'true':'MP_BOOLEAN_LIT',
-                    'false': 'MP_BOOLEAN_LIT',
+                    'true':'MP_TRUE',
+                    'false': 'MP_FALSE',
                     'string': 'MP_STRING',
                     'boolean': 'MP_BOOLEAN',
                     'writeln': 'MP_WRITELN'}
