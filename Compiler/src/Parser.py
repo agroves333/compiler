@@ -289,7 +289,6 @@ class Parser(object):
     
     
     def statement(self):
-        #TODO: handle ambiguity of identifier with rules 34, 39 if not correct now
         if self.lookahead in ['MP_SCOLON', 'MP_END', 'MP_ELSE', 'MP_UNTIL']:  # 30 Statement -> EmptyStatement
             self.emptyStatement()
         elif self.lookahead is 'MP_BEGIN':  # 31 Statement -> CompoundStatement
@@ -298,9 +297,13 @@ class Parser(object):
             self.readStatement()
         elif self.lookahead in ['MP_WRITE', 'MP_WRITELN']:  # 33 Statement -> WriteStatement
             self.writeStatement()
-        elif self.lookahead is 'MP_IDENTIFIER':  # 34 Statement -> AssignmentStatement   OR  # 39 Statement -> ProcedureStatement
-            self.assignmentStatement()
-#            self.procedureStatement()
+        elif self.lookahead is 'MP_IDENTIFIER':  # 39 Statement -> ProcedureStatement   OR  # 34 Statement -> AssignmentStatement
+            # if MP_ASSIGN is second lookahead, go to AssignStatement, else go to ProcedureStatement
+            second_lookahead = self.scanner.peekNextToken()
+            if second_lookahead is 'MP_ASSIGN':
+                self.assignmentStatement()
+            else:
+                self.procedureStatement()
         elif self.lookahead is 'MP_IF':  # 35 Statement -> IfStatement
             self.ifStatement()
         elif self.lookahead is 'MP_WHILE':  # 36 Statement -> WhileStatement
@@ -309,9 +312,6 @@ class Parser(object):
             self.repeatStatement()
         elif self.lookahead is 'MP_FOR':  # 28 Statement -> ForStatement
             self.forStatement()
-        elif self.lookahead is 'MP_IDENTIFIER':  # 39 Statement -> ProcedureStatement   OR  # 34 Statement -> AssignmentStatement
-            self.procedureStatement()  
-#            self.assignmentStatement()
         else:
             self.error()
     
@@ -715,7 +715,6 @@ class Parser(object):
     
     
     def factor(self):
-        #TODO: ambiguity of identifier, 94 and 97, if its not correct
         if self.lookahead in ['MP_INTEGER_LIT']:  # 93 Factor -> UnsignedInteger
             print self.match('MP_INTEGER_LIT')
         elif self.lookahead is 'MP_IDENTIFIER':  # 94 Factor -> VariableIdentifier  OR  # 97 Factor -> FunctionIdentifier OptionalActualParameterList
