@@ -28,7 +28,7 @@ class Analyzer(object):
                 
                 if leftOp["type"] == "Integer":
                     if operator["lexeme"] == "+":
-                        opIR = "SUBS"
+                        opIR = "ADDS"
                     if operator["lexeme"] == "-":
                         opIR = "SUBS"
                     if operator["lexeme"] == "*":
@@ -49,11 +49,16 @@ class Analyzer(object):
         self.output(opIR)
         return {"type": leftOp["type"]}
     
-    def genPushId(self, identRec, resultRec):
-        pass
+    def genPushId(self, identRec):
+        entry = self.processId(identRec["lexeme"])
+        nest = entry["nest"]
+        offset = entry["offset"]
+        self.output("PUSH "+str(offset)+"(D"+str(nest)+")")
+        resultRec = entry["type"]
+        return resultRec
     
     def processId(self, id):
-        for table in Parser.symbolTableStack[::-1]:
+        for table in Parser.symbolTableStack[::-1]: # Reverse tableStack to search from local to global scope
             result = table.find(id)
             if result != None:
                 result["nest"] = table.nest
