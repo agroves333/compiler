@@ -1,5 +1,6 @@
 program lab1;
    var  apple, candy, zebra: Integer;
+		h: Float;
        
    procedure mixit(a, b: Integer);
       var pony: Integer;
@@ -18,5 +19,6 @@ program lab1;
           pony := a + b;
        end;
     begin
-       write(zebra)
+	   read(h);
+       write(zebra);
     end.

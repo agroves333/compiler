@@ -8,7 +8,7 @@ class Analyzer(object):
     def __init__(self, fileName):
         
         self.outFile = open(fileName + '.asm', 'wb')
-        self.output('PUSH D0\n')
+        self.output('PUSH D0')
         
         
     def genAssign(self, ident_rec, expression_rec):
@@ -48,6 +48,16 @@ class Analyzer(object):
                 
         self.output(opIR)
         return {"type": leftOp["type"]}
+    
+    def genRead(self, identRec):
+        nest = identRec["nest"]
+        offset = identRec["offset"]
+        if identRec["type"] == "String":
+            self.output("RDS "+str(offset)+"(D"+str(nest)+")")
+        elif identRec["type"] == "Integer":
+            self.output("RD "+str(offset)+"(D"+str(nest)+")") 
+        elif identRec["type"] == "Float":
+            self.output("RDF "+str(offset)+"(D"+str(nest)+")")
     
     def genPushId(self, identRec):
         entry = self.processId(identRec["lexeme"])

@@ -350,7 +350,9 @@ class Parser(object):
     
     def readParameter(self):
         if self.lookahead is 'MP_IDENTIFIER':  # 44 ReadParameter -> VariableIdentifier
-            self.variableIdentifier()
+            id = self.variableIdentifier()
+            identRec = self.analyzer.processId(id)
+            self.analyzer.genRead(identRec)
         else:
             self.error()
             
@@ -579,7 +581,7 @@ class Parser(object):
                               'MP_TRUE', 'MP_FALSE']:
             self.simpleExpression()
             self.optionalRelationalPart()
-            return self.mapTokenToType(self.lookahead)
+#             return self.mapTokenToType(self.lookahead)
         else:
             self.error()
          
