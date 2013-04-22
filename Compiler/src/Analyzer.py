@@ -60,10 +60,10 @@ class Analyzer(object):
             self.output("RDF "+str(offset)+"(D"+str(nest)+")")
             
     def genWrite(self):
-        pass
+        self.output("WRTS")
     
     def genWriteln(self):
-        pass
+        self.output('WRT #"\\n"')
     
     def genPushId(self, identRec):
         entry = self.processId(identRec["lexeme"])
@@ -72,6 +72,21 @@ class Analyzer(object):
         self.output("PUSH "+str(offset)+"(D"+str(nest)+")")
         resultRec = entry["type"]
         return resultRec
+    
+    def genPushInt(self, integer):
+        self.output("PUSH #"+integer)
+    
+    def genPushFloat(self, float):
+        self.output("PUSH #"+float)
+    
+    def genPushString(self, string):
+        self.output("PUSH #"+string)
+        
+    def genIncreaseStack(self, amount):
+        self.output("ADD SP,"+str(amount)+",SP")
+        
+    def genDecreaseStack(self, amount):
+        self.output("SUB SP,"+str(amount)+",SP")
     
     def processId(self, id):
         for table in Parser.symbolTableStack[::-1]: # Reverse tableStack to search from local to global scope

@@ -256,11 +256,11 @@ class Parser(object):
     def compoundStatement(self):
         if self.lookahead is 'MP_BEGIN':  # 26 CompoundStatement -> "begin" StatementSequence "end"
             self.match('MP_BEGIN')
-            self.analyzer.output("ADD SP,"+str(self.symbolTableStack[-1].size)+",SP")
+            self.analyzer.genIncreaseStack(self.symbolTableStack[-1].size)
             self.statementSequence()
             self.match('MP_END')
 #             self.printTableStack()
-            self.analyzer.output("SUB SP,"+str(self.symbolTableStack[-1].size)+",SP")
+            self.analyzer.genDecreaseStack(self.symbolTableStack[-1].size)
             self.symbolTableStack.pop()
         else:
             self.error()
@@ -369,7 +369,7 @@ class Parser(object):
             self.match('MP_LPAREN')
             self.writeParameter()
             self.writeParameterTail()
-            self.analyzer.output('WRT #"\\n"')
+            self.analyzer.genWriteln()
             self.match('MP_RPAREN')
         else:
             self.error()
@@ -392,7 +392,7 @@ class Parser(object):
                               'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
             self.ordinalExpression()
-            self.analyzer.output("WRTS")
+            self.analyzer.genWrite()
         else:
             self.error()
     
@@ -759,7 +759,7 @@ class Parser(object):
         
         if self.lookahead in ['MP_INTEGER_LIT']:  # 93 Factor -> UnsignedInteger
             integer = self.match('MP_INTEGER_LIT')
-            self.analyzer.output("PUSH #"+integer)
+            self.analyzer.genPushInt(integer)
             return "Integer"
         elif self.lookahead is 'MP_IDENTIFIER':  # 94 Factor -> VariableIdentifier  OR  # 97 Factor -> FunctionIdentifier OptionalActualParameterList
             id_kind = self.analyzer.processId(self.scanner.lexeme)["kind"]
@@ -783,14 +783,14 @@ class Parser(object):
             self.match('MP_RPAREN')
         elif self.lookahead in ['MP_FLOAT_LIT']:  # 113 Factor -> UnsignedFloat
             float = self.match('MP_FLOAT_LIT')
-            self.analyzer.output("PUSH #"+float)
+            self.analyzer.genPushFloat(float)
             return "Float"
         elif self.lookahead in ['MP_FIXED_LIT']:  # 113 Factor -> UnsignedFloat
             fixed = self.match('MP_FIXED_LIT')
-            self.analyzer.output("PUSH #"+fixed)
+            self.analyzer.genPushFloat(fixed)
         elif self.lookahead in ['MP_STRING_LIT']:  # 114 Factor -> StringLiteral
             string = self.match('MP_STRING_LIT')
-            self.analyzer.output("PUSH #"+string)
+            self.analyzer.genPushString(string)
         elif self.lookahead in ['MP_TRUE']:  # 115 Factor -> "True"
             self.match('MP_TRUE')
         elif self.lookahead in ['MP_FALSE']:  # 116 Factor -> "False"
