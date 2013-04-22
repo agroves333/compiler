@@ -80,13 +80,25 @@ class Analyzer(object):
         self.output("PUSH #"+float)
     
     def genPushString(self, string):
-        self.output("PUSH #"+string)
+        self.output('PUSH #"'+string+'"')
         
     def genIncreaseStack(self, amount):
         self.output("ADD SP,"+str(amount)+",SP")
         
     def genDecreaseStack(self, amount):
         self.output("SUB SP,"+str(amount)+",SP")
+        
+    def genLabel(self, label):
+        self.output("L" + str(label))
+        
+    def genBranch(self, label):
+        self.output("BR L" + str(label))
+        
+    def genCall(self, label):
+        self.output("CALL L" + str(label))
+    
+    def genRet(self):
+        self.output("RET")
     
     def processId(self, id):
         for table in Parser.symbolTableStack[::-1]: # Reverse tableStack to search from local to global scope

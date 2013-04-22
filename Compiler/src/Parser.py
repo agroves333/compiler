@@ -62,6 +62,8 @@ class Parser(object):
             self.match("MP_PROGRAM")
             self.programIdentifier()
             self.push('Main')
+            self.analyzer.genBranch(self.label)
+            self.label = self.label + 1
         else:
             self.error()
     
@@ -167,6 +169,8 @@ class Parser(object):
             name = self.procedureIdentifier()
             self.insertEntry(name, 'procedure')
             self.push(name)
+            self.analyzer.genLabel(self.label)
+            self.label = self.label + 1
             self.optionalFormalParameterList()
         else:
             self.error()
