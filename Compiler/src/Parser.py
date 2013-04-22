@@ -362,14 +362,15 @@ class Parser(object):
             self.match('MP_WRITE')
             self.match('MP_LPAREN')
             self.writeParameter()
-            self.writeParameterTail()
+            self.writeParameterTail()          
             self.match('MP_RPAREN')
         elif self.lookahead is 'MP_WRITELN': # 111 WriteStatement -> writeln "(" WriteParameter WriteParameterTail ")"
-            self.match('MP_WRITE')
-            self.match('LP_LPAREN')
+            self.match('MP_WRITELN')
+            self.match('MP_LPAREN')
             self.writeParameter()
             self.writeParameterTail()
-            self.match('RPAREN')
+            self.analyzer.output('WRT #"\\n"')
+            self.match('MP_RPAREN')
         else:
             self.error()
       
@@ -391,6 +392,7 @@ class Parser(object):
                               'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
             self.ordinalExpression()
+            self.analyzer.output("WRTS")
         else:
             self.error()
     
@@ -406,7 +408,6 @@ class Parser(object):
             identRec = self.analyzer.processId(id)
             self.match('MP_ASSIGN')
             expressionRec["type"] = self.expression()
-#             print expressionRec["type"]
             self.analyzer.genAssign(identRec, expressionRec)
             
         # This doesn't change parsing functionality
@@ -758,7 +759,7 @@ class Parser(object):
         
         if self.lookahead in ['MP_INTEGER_LIT']:  # 93 Factor -> UnsignedInteger
             integer = self.match('MP_INTEGER_LIT')
-            self.analyzer.output("PUSH "+integer)
+            self.analyzer.output("PUSH #"+integer)
             return "Integer"
         elif self.lookahead is 'MP_IDENTIFIER':  # 94 Factor -> VariableIdentifier  OR  # 97 Factor -> FunctionIdentifier OptionalActualParameterList
             id_kind = self.analyzer.processId(self.scanner.lexeme)["kind"]
@@ -781,11 +782,15 @@ class Parser(object):
             self.expression()
             self.match('MP_RPAREN')
         elif self.lookahead in ['MP_FLOAT_LIT']:  # 113 Factor -> UnsignedFloat
-            self.match('MP_FLOAT_LIT')
+            float = self.match('MP_FLOAT_LIT')
+            self.analyzer.output("PUSH #"+float)
+            return "Float"
         elif self.lookahead in ['MP_FIXED_LIT']:  # 113 Factor -> UnsignedFloat
-            self.match('MP_FIXED_LIT')
+            fixed = self.match('MP_FIXED_LIT')
+            self.analyzer.output("PUSH #"+fixed)
         elif self.lookahead in ['MP_STRING_LIT']:  # 114 Factor -> StringLiteral
-            self.match('MP_STRING_LIT')
+            string = self.match('MP_STRING_LIT')
+            self.analyzer.output("PUSH #"+string)
         elif self.lookahead in ['MP_TRUE']:  # 115 Factor -> "True"
             self.match('MP_TRUE')
         elif self.lookahead in ['MP_FALSE']:  # 116 Factor -> "False"

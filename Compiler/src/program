@@ -20,5 +20,5 @@ program lab1;
        end;
     begin
 	   read(h);
-       write(zebra);
+       writeln(zebra, 12);
     end.

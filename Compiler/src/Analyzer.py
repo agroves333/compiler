@@ -58,6 +58,12 @@ class Analyzer(object):
             self.output("RD "+str(offset)+"(D"+str(nest)+")") 
         elif identRec["type"] == "Float":
             self.output("RDF "+str(offset)+"(D"+str(nest)+")")
+            
+    def genWrite(self):
+        pass
+    
+    def genWriteln(self):
+        pass
     
     def genPushId(self, identRec):
         entry = self.processId(identRec["lexeme"])
