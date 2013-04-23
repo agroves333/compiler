@@ -13,22 +13,18 @@ class SymbolTable(object):
     size = 0
     next = None
     entries = []
-    labelCounter = 1
     
     
-    def __init__(self, name, nest, size, next):
+    def __init__(self, name, nest, size, next, label):
         self.name = name
-        self.label = "L1" if name == "Main" else ''
         self.nest = nest
         self.size = size
         self.next = next
+        self.label = label
         self.entries = []
-    
-    
+
+
     def insert(self, name, kind, type, size, offset, label=''):
-        if kind in ['procedure', 'function']:
-            SymbolTable.labelCounter += 1
-            label = "L"+str(SymbolTable.labelCounter)
         
         self.entries.append({"name":name, "kind":kind, "type":type, "size":size, "offset":offset, "label":label})
         self.size += size 

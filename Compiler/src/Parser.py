@@ -11,7 +11,6 @@ class Parser(object):
     sourceFile = None
     symbolTableStack = []
     lookahead = ''
-    label = 0
     
     
     # Constructor
@@ -61,9 +60,8 @@ class Parser(object):
         if self.lookahead is "MP_PROGRAM":  # 3 ProgramHeading -> "program" ProgramIdentifier
             self.match("MP_PROGRAM")
             self.programIdentifier()
-            self.push('Main')
-            self.analyzer.genBranch(self.label)
-            self.label = self.label + 1
+            self.push('Main', self.analyzer.getLabel())
+            self.analyzer.genBranch(self.analyzer.getLabel())
         else:
             self.error("MP_PROGRAM")
     
@@ -156,7 +154,7 @@ class Parser(object):
     def functionDeclaration(self):
         if self.lookahead is "MP_FUNCTION":  # 14 FunctionDeclaration  -> FunctionHeading ";" Block ";"
             self.functionHeading()
-            self.match("MP_SCOLON");
+            self.match("MP_SCOLON")
             self.block()
             self.match("MP_SCOLON")
         else:
@@ -167,10 +165,9 @@ class Parser(object):
         if self.lookahead is "MP_PROCEDURE":  # 15 ProcedureHeading -> "procedure" procedureIdentifier OptionalFormalParameterList
             self.match("MP_PROCEDURE")
             name = self.procedureIdentifier()
-            self.insertEntry(name, 'procedure')
-            self.push(name)
-            self.analyzer.genLabel(self.label)
-            self.label = self.label + 1
+            label = self.analyzer.incrementLabel()
+            self.insertEntry(name, 'procedure', label=label)
+            self.push(name, label)
             self.optionalFormalParameterList()
         else:
             self.error("Procedure")
@@ -180,8 +177,9 @@ class Parser(object):
         if self.lookahead is "MP_FUNCTION":  # 16 FunctionHeading -> "function" functionIdentifier OptionalFormalParameterList ":" Type
             self.match("MP_FUNCTION")
             name = self.functionIdentifier()
-            self.insertEntry(name, 'function')
-            self.push(name)
+            label = self.analyzer.incrementLabel()
+            self.insertEntry(name, 'function', label=label)
+            self.push(name, label)
             self.optionalFormalParameterList()
             self.match("MP_COLON")
             self.type()
@@ -260,6 +258,7 @@ class Parser(object):
     def compoundStatement(self):
         if self.lookahead is 'MP_BEGIN':  # 26 CompoundStatement -> "begin" StatementSequence "end"
             self.match('MP_BEGIN')
+            self.analyzer.genLabel(self.symbolTableStack[-1].label)
             self.analyzer.genIncreaseStack(self.symbolTableStack[-1].size)
             self.statementSequence()
             self.match('MP_END')
@@ -867,8 +866,8 @@ class Parser(object):
         else:
             self.error("identifier")
     
-     
-     
+
+
     def identifierTail(self,ident): 
         if(self.lookahead == "MP_COMMA"):  # 105 IdentifierTail -> "," Identifier IdentifierTail
             self.match("MP_COMMA")
@@ -894,7 +893,7 @@ class Parser(object):
         sys.exit()
         
  
-    
+
     def printTableStack(self):
         table = self.symbolTableStack[len(self.symbolTableStack)-1]
         print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
@@ -905,17 +904,17 @@ class Parser(object):
         for entry in table.entries:
             print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:<10d} {5:<10d} {6:10s} {0:<1s}'.format('|', entry['name'], entry['kind'], entry['type'], entry['size'], entry['offset'], entry['label'])
         print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')+"\n"
-                       
 
-    def push(self, name, nest=0, size=0, next=None):
+
+    def push(self, name, label, nest=0, size=0, next=None):
         stack = self.symbolTableStack
         nest = len(stack)
         next = stack[-1].name if len(stack) > 0 else None
-        stack.append(SymbolTable(name, nest, size, next))
-        
+        stack.append(SymbolTable(name, nest, size, next, label))
+
     def insertEntry(self, name, kind, type = "", size= 0, offset = 0, label = ""):
         table = self.symbolTableStack[-1]
-        
+
         if kind == 'var':
             if type == 'Integer':
                 size = 4
@@ -923,14 +922,14 @@ class Parser(object):
                 size = 8
             elif type == 'Character':
                 size = 1
-        
-        
+
+
             if len(table.entries) > 0:
                 previous_size = table.entries[-1]['size']
                 previous_offset = table.entries[-1]['offset']
                 offset = previous_size + previous_offset
-  
-        table.insert(name, kind, type, size, offset, label)     
+
+        table.insert(name, kind, type, size, offset, label)
    
 
 from Analyzer import Analyzer       

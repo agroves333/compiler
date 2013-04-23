@@ -9,6 +9,7 @@ class Analyzer(object):
         
         self.outFile = open(fileName + '.asm', 'wb')
         self.output('PUSH D0')
+        self.labelNumber = 1
         
         
     def genAssign(self, ident_rec, expression_rec):
@@ -89,10 +90,10 @@ class Analyzer(object):
         self.output("SUB SP #"+str(amount)+" SP")
         
     def genLabel(self, label):
-        self.output("L" + str(label) +":")
+        self.output(label +":")
         
     def genBranch(self, label):
-        self.output("BR L" + str(label))
+        self.output("BR " + label)
         
     def genCall(self, label):
         self.output("CALL L" + str(label))
@@ -110,3 +111,10 @@ class Analyzer(object):
 
     def output(self, value):
         self.outFile.write(value+"\n")
+
+    def getLabel(self):
+        return "L" + str(self.labelNumber)
+
+    def incrementLabel(self):
+        self.labelNumber += 1
+        return self.getLabel()
