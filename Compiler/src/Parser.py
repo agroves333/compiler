@@ -44,7 +44,7 @@ class Parser(object):
         if self.lookahead is "MP_PROGRAM":  # 1 SystemGoal -> Program eof
             self.program()
         else:
-            self.error()
+            self.error("MP_PROGRAM")
             
     
     def program(self):
@@ -54,7 +54,7 @@ class Parser(object):
             self.block()
             self.match("MP_PERIOD")
         else:
-            self.error()
+            self.error("MP_PROGRAM")
     
     
     def programHeading(self):
@@ -65,7 +65,7 @@ class Parser(object):
             self.analyzer.genBranch(self.label)
             self.label = self.label + 1
         else:
-            self.error()
+            self.error("MP_PROGRAM")
     
     
     def block(self):
@@ -74,7 +74,7 @@ class Parser(object):
             self.procedureAndFunctionDeclarationPart()
             self.statementPart()
         else:
-            self.error()
+            self.error('"MP_VAR", "MP_BEGIN", "MP_FUNCTION", "MP_PROCEDURE"')
     
     
     def variableDeclarationPart(self):
@@ -87,7 +87,7 @@ class Parser(object):
         elif self.lookahead in ["MP_BEGIN", "MP_FUNCTION", "MP_PROCEDURE"]:
             return
         else:
-            self.error()
+            self.error('"MP_VAR", "MP_BEGIN", "MP_FUNCTION", "MP_PROCEDURE"')
     
     
     def variableDeclarationTail(self):
@@ -98,7 +98,7 @@ class Parser(object):
             self.match("MP_SCOLON")
             self.variableDeclarationTail()
         else:
-            self.error()
+            self.error('"MP_PROCEDURE", "MP_FUNCTION", "MP_BEGIN", "MP_IDENTIFIER", "MP_SCOLON"')
     
     
     
@@ -110,7 +110,7 @@ class Parser(object):
             for name in idList:
                 self.insertEntry(name, 'var', varType)
         else:
-            self.error()
+            self.error("MP_IDENTIFIER")
     
     
     def type(self):
@@ -127,7 +127,7 @@ class Parser(object):
             self.match("MP_BOOLEAN")
             return 'Boolean'
         else:
-            self.error()
+            self.error("Integer, Float, String, Boolean")
     
     
     def procedureAndFunctionDeclarationPart(self):
@@ -140,7 +140,7 @@ class Parser(object):
         elif self.lookahead is "MP_BEGIN":  # 12 ProcedureAndFunctionDeclarationPart -> lambda
             return
         else:
-            self.error()
+            self.error("Procedure, Function, Begin")
 
     
     def procedureDeclaration(self):
@@ -150,7 +150,7 @@ class Parser(object):
             self.block()
             self.match('MP_SCOLON')
         else:
-            self.error()
+            self.error("Procedure")
     
           
     def functionDeclaration(self):
@@ -160,7 +160,7 @@ class Parser(object):
             self.block()
             self.match("MP_SCOLON")
         else:
-            self.error()
+            self.error("Function")
     
     
     def procedureHeading(self):
@@ -173,7 +173,7 @@ class Parser(object):
             self.label = self.label + 1
             self.optionalFormalParameterList()
         else:
-            self.error()
+            self.error("Procedure")
     
     
     def functionHeading(self):
@@ -186,7 +186,7 @@ class Parser(object):
             self.match("MP_COLON")
             self.type()
         else:
-            self.error()
+            self.error("Function")
     
     
     
@@ -200,7 +200,7 @@ class Parser(object):
         elif self.lookahead in ['MP_COLON', 'MP_SCOLON', 'MP_INTEGER', 'MP_FLOAT', 'MP_BOOLEAN', 'MP_STRING']:  # 18 OptionalFormalParameterList -> lambda
             return
         else:
-            self.error
+            self.error("(, :, ;, Integer, Float, Boolean, String")
        
     
     def formalParameterSectionTail(self):
@@ -211,7 +211,7 @@ class Parser(object):
         elif self.lookahead is 'MP_RPAREN':  # 20 FormalParameterSectionTail -> lambda
             return 
         else:
-            self.error
+            self.error(";, )")
     
     
     
@@ -221,7 +221,7 @@ class Parser(object):
         elif self.lookahead is 'MP_VAR':  # 22 FormalParameterSection -> VariableParameterSection
             self.variableParameterSection()
         else:
-            self.error()
+            self.error("Identifier, Var")
     
     
     def valueParameterSection(self):
@@ -233,7 +233,7 @@ class Parser(object):
             for name in identList:
                 self.insertEntry(name, 'var', varType)
         else:
-            self.error()
+            self.error("Identifier")
     
     
     def variableParameterSection(self):
@@ -247,14 +247,14 @@ class Parser(object):
                 self.insertEntry(name, 'var', varType)
             
         else:
-            self.error()
+            self.error("Var")
     
     
     def statementPart(self):
         if self.lookahead is 'MP_BEGIN':  # 25 StatementPart -> CompoundStatement
             self.compoundStatement()
         else:
-            self.error()
+            self.error("Begin")
         
     
     def compoundStatement(self):
@@ -267,7 +267,7 @@ class Parser(object):
             self.analyzer.genDecreaseStack(self.symbolTableStack[-1].size)
             self.symbolTableStack.pop()
         else:
-            self.error()
+            self.error("begin")
     
     
     def statementSequence(self):
@@ -279,7 +279,9 @@ class Parser(object):
             self.statement()
             self.statementTail()
         else:
-            self.error()
+            self.error("'MP_SCOLON', 'MP_IDENTIFIER', 'MP_BEGIN', 'MP_END', 'MP_READ',\
+                            'MP_WRITE', 'MP_IF', 'MP_ELSE', 'MP_REPEAT', 'MP_UNTIL', 'MP_WHILE',\
+                            'MP_FOR', 'MP_WRITELN'")
     
     
     def statementTail(self):
@@ -290,7 +292,7 @@ class Parser(object):
         elif self.lookahead in ['MP_END', 'MP_UNTIL']:  # 29 StatementTail -> lambda
             return
         else:
-            self.error()
+            self.error(";, end, until")
     
     
     def statement(self):
@@ -318,7 +320,7 @@ class Parser(object):
         elif self.lookahead is 'MP_FOR':  # 28 Statement -> ForStatement
             self.forStatement()
         else:
-            self.error()
+            self.error(";, end, else, until, begin, read, write, writeln, identifier, :=, if, while, repeat, for")
     
     
     
@@ -327,7 +329,7 @@ class Parser(object):
                               'MP_ELSE', 'MP_UNTIL']:
             return
         else:
-            self.error()
+            self.error(";, end, else, until")
     
     
     def readStatement(self):
@@ -338,7 +340,7 @@ class Parser(object):
             self.readParameterTail()
             self.match('MP_RPAREN')
         else:
-            self.error()
+            self.error("read")
             
     
     def readParameterTail(self):
@@ -349,7 +351,7 @@ class Parser(object):
         elif self.lookahead is 'MP_RPAREN':  # 43 ReadParameterTail -> lambda
             return
         else:
-            self.error()
+            self.error("comma, )")
     
     
     def readParameter(self):
@@ -358,7 +360,7 @@ class Parser(object):
             identRec = self.analyzer.processId(id)
             self.analyzer.genRead(identRec)
         else:
-            self.error()
+            self.error("identifier")
             
     
     def writeStatement(self):
@@ -376,7 +378,7 @@ class Parser(object):
             self.analyzer.genWriteln()
             self.match('MP_RPAREN')
         else:
-            self.error()
+            self.error("write, writeln")
       
     
     def writeParameterTail(self):
@@ -386,7 +388,7 @@ class Parser(object):
         elif self.lookahead is 'MP_RPAREN':  # 47 WriteParameterTail -> lambda
             return
         else:
-            self.error()
+            self.error("comma, )")
     
     
     def writeParameter(self):
@@ -398,7 +400,7 @@ class Parser(object):
             self.ordinalExpression()
             self.analyzer.genWrite()
         else:
-            self.error()
+            self.error("(, identifier, +, -, any literal value, not")
     
     
     def assignmentStatement(self):
@@ -420,7 +422,7 @@ class Parser(object):
         #    self.match('MP_ASSIGN')
         #    self.expression()
         else:
-            self.error()
+            self.error("identifier")
             
             
     
@@ -432,7 +434,7 @@ class Parser(object):
             self.statement()
             self.optionalElsePart()
         else:
-            self.error()
+            self.error("if")
     
     
    
@@ -445,7 +447,7 @@ class Parser(object):
         elif self.lookahead in ['MP_SCOLON', 'MP_END', 'MP_UNTIL']:  # 53 OptionalElsePart -> lambda
             return
         else:
-            self.error()
+            self.error("else, ;, end, until")
             
     
                 
@@ -456,7 +458,7 @@ class Parser(object):
             self.match('MP_UNTIL')
             self.booleanExpression()
         else:
-            self.error()
+            self.error("repeat")
             
     
     
@@ -467,7 +469,7 @@ class Parser(object):
             self.match('MP_DO')
             self.statement()
         else:
-            self.error()
+            self.error("while")
             
     
     
@@ -482,7 +484,7 @@ class Parser(object):
             self.match('MP_DO')
             self.statement()
         else:
-            self.error()
+            self.error("for")
             
     
     
@@ -490,7 +492,7 @@ class Parser(object):
         if self.lookahead is 'MP_IDENTIFIER':  # 57 ControlVariable -> VariableIdentifier
             self.variableIdentifier()
         else:
-            self.error()
+            self.error("identifier")
 
     
     def initialValue(self):
@@ -501,7 +503,7 @@ class Parser(object):
                               'MP_TRUE', 'MP_FALSE']:
             self.ordinalExpression()
         else:
-            self.error()
+            self.error("(, identifier, +, -, any literal value, not")
     
     
     
@@ -511,7 +513,7 @@ class Parser(object):
         elif self.lookahead is 'MP_DOWNTO':  # 60 StepValue -> "downto"
             self.match('MP_DOWNTO')
         else:
-            self.error()
+            self.error("to, downto")
         
     
     
@@ -523,7 +525,7 @@ class Parser(object):
                               'MP_TRUE', 'MP_FALSE']:
             self.ordinalExpression()
         else:
-            self.error()
+            self.error("(, identifier, +, -, any literal value, not")
             
     
     
@@ -532,7 +534,7 @@ class Parser(object):
             self.procedureIdentifier()
             self.optionalActualParameterList()
         else:
-            self.error()
+            self.error("identifier")
     
     
     
@@ -550,7 +552,7 @@ class Parser(object):
                                 'MP_DIV', 'MP_MOD', 'MP_AND', 'MP_SLASH']:
             return
         else:
-            self.error()
+            self.error(";, ), end, comma, then, else, until, to do, downto, an equality operator, an arithmetic operator, and, mod")
             
     
     
@@ -562,7 +564,7 @@ class Parser(object):
         elif self.lookahead is 'MP_RPAREN':  # 66 ActualParameterTail -> lambda
             return
         else:
-            self.error()
+            self.error("comma, )")
     
     
    
@@ -574,7 +576,7 @@ class Parser(object):
                               'MP_TRUE', 'MP_FALSE']:
             self.ordinalExpression()
         else:
-            self.error()
+            self.error("(, identifier, +, -, any literal value, not")
             
     
     
@@ -588,7 +590,7 @@ class Parser(object):
             self.optionalRelationalPart()
 #             return self.mapTokenToType(self.lookahead)
         else:
-            self.error()
+            self.error("(, identifier, +, -, any literal value, not")
          
     
     
@@ -605,7 +607,7 @@ class Parser(object):
                                 'MP_TO', 'MP_DOWNTO']:
             return
         else:
-            self.error()    
+            self.error("an equality operator, ;, ), then, else, until, do, to, downto")
         
     
        
@@ -623,7 +625,7 @@ class Parser(object):
         elif self.lookahead is 'MP_NEQUAL':  # 76 RelationalOperator -> "<>"
             self.match('MP_NEQUAL')
         else:
-            self.error()
+            self.error("an equality operator")
             
     
     
@@ -646,7 +648,7 @@ class Parser(object):
             expressionRec = termTailRec     # This seems absolutely retarded but it's what Rocky suggested
             return expressionRec
         else:
-            self.error()
+            self.error("(, identifier, +, -, any literal value, not")
             
     
     
@@ -674,7 +676,7 @@ class Parser(object):
                                 'MP_NEQUAL']:
             return
         else:
-            self.error()
+            self.error("+, -, or, ;, ), end, comma, then, else, until, do, to, downto, an equality operator")
             
     
     
@@ -689,7 +691,7 @@ class Parser(object):
                                 'MP_TRUE', 'MP_FALSE']:
             return
         else:
-            self.error()
+            self.error("+, -, (, identifier, +, -, any literal value, not")
     
     
     
@@ -701,7 +703,7 @@ class Parser(object):
         elif self.lookahead is 'MP_OR':  # 85 AddingOperator -> "or"
             return self.match('MP_OR')
         else:
-            self.error()
+            self.error("+, -, or")
             
     
     
@@ -719,7 +721,7 @@ class Parser(object):
             return termRec
 #             return self.mapTokenToType(self.lookahead)
         else:
-            self.error()
+            self.error("(, identifier, +, -, any literal value, not")
             
             
     
@@ -737,7 +739,7 @@ class Parser(object):
                                 'MP_PLUS', 'MP_MINUS', 'MP_OR']:
             return
         else:
-            self.error()
+            self.error("*, div, mod, and /, ;, ), end, comma, then, else, until, do, to, downto, an equality operator, +, -, or")
             
             
             
@@ -753,7 +755,7 @@ class Parser(object):
         elif self.lookahead is 'MP_SLASH':  # 112 MultiplyingOperator -> "/"
             self.match('MP_SLASH')
         else:
-            self.error()
+            self.error("*, div, mod, and /")
             
     
     
@@ -799,34 +801,36 @@ class Parser(object):
             self.match('MP_TRUE')
         elif self.lookahead in ['MP_FALSE']:  # 116 Factor -> "False"
             self.match('MP_FALSE')
+        else:
+            self.error("(, identifier, +, -, any literal value, not")
 
 
     def programIdentifier(self):
         if(self.lookahead == "MP_IDENTIFIER"):  # 98 ProgramIdentifier -> Identifier
             return self.match("MP_IDENTIFIER")
         else:
-            self.error()
+            self.error("identifier")
     
     
     def variableIdentifier(self): 
         if(self.lookahead == "MP_IDENTIFIER"):  # 99 VariableIdentifier -> Identifier
             return self.match("MP_IDENTIFIER")
         else:
-            self.error()
+            self.error("identifier")
     
     
     def procedureIdentifier(self): 
         if(self.lookahead == "MP_IDENTIFIER"):  # 100 ProcedureIdentifier -> Identifier
             return self.match("MP_IDENTIFIER")
         else:
-            self.error()
+            self.error("identifier")
     
     
     def functionIdentifier(self): 
         if(self.lookahead == "MP_IDENTIFIER"):  # 101 FunctionIdentifier -> Identifier
             return self.match("MP_IDENTIFIER")
         else:
-            self.error()
+            self.error("identifier")
     
    
     def booleanExpression(self):
@@ -838,7 +842,7 @@ class Parser(object):
                               'MP_FALSE']):
             self.expression()
         else:
-            self.error()
+            self.error("(, identifier, +, -, any literal value, not, +, -")
     
       
     def ordinalExpression(self):
@@ -850,7 +854,7 @@ class Parser(object):
                               'MP_FALSE']):
             self.expression()
         else:
-            self.error()
+            self.error("(, identifier, +, -, any literal value, not, +, -")
     
     
     def identifierList(self):
@@ -861,7 +865,7 @@ class Parser(object):
             self.identifierTail(ident)
             return ident
         else:
-            self.error()
+            self.error("identifier")
     
      
      
@@ -874,10 +878,11 @@ class Parser(object):
         elif(self.lookahead == "MP_COLON"):  # 106 IdentifierTail -> lambda
             return
         else:
-            self.error()                               
+            self.error("comma, :")
 
-    def error(self):
+    def error(self, expected):
         print "Syntax error found on line " + str(self.scanner.getLineNumber()) + ", column " + str(self.scanner.getColumnNumber())
+        print "Found " + self.scanner.lexeme + " when expected one of: " + expected
         # print the caller
 #         print inspect.stack()[1][3]
         sys.exit()
