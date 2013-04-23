@@ -83,13 +83,13 @@ class Analyzer(object):
         self.output('PUSH #"'+string+'"')
         
     def genIncreaseStack(self, amount):
-        self.output("ADD SP,"+str(amount)+",SP")
+        self.output("ADD SP #"+str(amount)+" SP")
         
     def genDecreaseStack(self, amount):
-        self.output("SUB SP,"+str(amount)+",SP")
+        self.output("SUB SP #"+str(amount)+" SP")
         
     def genLabel(self, label):
-        self.output("L" + str(label))
+        self.output("L" + str(label) +":")
         
     def genBranch(self, label):
         self.output("BR L" + str(label))
