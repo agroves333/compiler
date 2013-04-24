@@ -4,6 +4,7 @@ Created on Mar 1, 2013
 @author: adam
 '''
 
+import sys
 
 class SymbolTable(object):
     
@@ -25,9 +26,13 @@ class SymbolTable(object):
 
 
     def insert(self, name, kind, type, size, offset, label=''):
-        
-        self.entries.append({"name":name, "kind":kind, "type":type, "size":size, "offset":offset, "label":label})
-        self.size += size 
+
+        if self.find(name) is None:
+            self.entries.append({"name":name, "kind":kind, "type":type, "size":size, "offset":offset, "label":label})
+            self.size += size
+        else:
+            print "ERROR: Already have something named " + name + ".  Cannot declare another " + name + "."
+            sys.exit()
         
         
     def setNext(self, next):
