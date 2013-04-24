@@ -5,11 +5,12 @@ class Analyzer(object):
     
     outFile = None
     
-    def __init__(self, fileName):
+    def __init__(self, fileName, symbolTableStack):
         
         self.outFile = open(fileName + '.asm', 'wb')
         self.output('PUSH D0')
         self.labelNumber = 1
+        self.symbolTableStack = symbolTableStack
         
         
     def genAssign(self, ident_rec, expression_rec):
@@ -106,7 +107,7 @@ class Analyzer(object):
         self.output("RET")
 
     def processId(self, id):
-        for table in Parser.symbolTableStack[::-1]: # Reverse tableStack to search from local to global scope
+        for table in self.symbolTableStack.tables[::-1]: # Reverse tableStack to search from local to global scope
             result = table.find(id)
             if result != None:
                 result["nest"] = table.nest

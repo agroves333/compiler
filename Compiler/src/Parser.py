@@ -1,7 +1,7 @@
 import sys
 # import inspect
 
-from SymbolTable import SymbolTable
+from SymbolTable import SymbolTableStack
 from Scanner import Scanner
 
 class Parser(object):
@@ -9,7 +9,7 @@ class Parser(object):
     scanner = None
     analyzer = None
     sourceFile = None
-    symbolTableStack = []
+    symbolTableStack = None
     lookahead = ''
     
     
@@ -21,7 +21,8 @@ class Parser(object):
             sys.exit("Source file not found")
 
         self.scanner = Scanner(self.sourceFile)
-        self.analyzer = Analyzer(fileName)
+        self.symbolTableStack = SymbolTableStack()
+        self.analyzer = Analyzer(fileName, self.symbolTableStack)
 
     def parse(self):
         self.lookahead = self.scanner.getNextToken()
@@ -60,7 +61,7 @@ class Parser(object):
         if self.lookahead is "MP_PROGRAM":  # 3 ProgramHeading -> "program" ProgramIdentifier
             self.match("MP_PROGRAM")
             self.programIdentifier()
-            self.push('Main', self.analyzer.getLabel())
+            self.symbolTableStack.addTable('Main', self.analyzer.getLabel())
             self.analyzer.genBranch(self.analyzer.getLabel())
         else:
             self.error("MP_PROGRAM")
@@ -106,7 +107,7 @@ class Parser(object):
             self.match("MP_COLON")
             varType = self.type()
             for name in idList:
-                self.insertEntry(name, 'var', varType)
+                self.symbolTableStack.getCurrentTable().insertEntry(name, 'var', varType)
         else:
             self.error("MP_IDENTIFIER")
     
@@ -166,8 +167,8 @@ class Parser(object):
             self.match("MP_PROCEDURE")
             name = self.procedureIdentifier()
             label = self.analyzer.incrementLabel()
-            self.insertEntry(name, 'procedure', label=label)
-            self.push(name, label)
+            self.symbolTableStack.getCurrentTable().insertEntry(name, 'procedure', label=label)
+            self.symbolTableStack.addTable(name, label)
             self.optionalFormalParameterList()
         else:
             self.error("Procedure")
@@ -178,8 +179,8 @@ class Parser(object):
             self.match("MP_FUNCTION")
             name = self.functionIdentifier()
             label = self.analyzer.incrementLabel()
-            self.insertEntry(name, 'function', label=label)
-            self.push(name, label)
+            self.symbolTableStack.getCurrentTable().insertEntry(name, 'function', label=label)
+            self.symbolTableStack.addTable(name, label)
             self.optionalFormalParameterList()
             self.match("MP_COLON")
             self.type()
@@ -229,7 +230,7 @@ class Parser(object):
             self.match('MP_COLON')
             varType = self.type()
             for name in identList:
-                self.insertEntry(name, 'var', varType)
+                self.symbolTableStack.getCurrentTable().insertEntry(name, 'var', varType)
         else:
             self.error("Identifier")
     
@@ -242,7 +243,7 @@ class Parser(object):
             self.match('MP_COLON')
             varType = self.type()
             for name in identList:
-                self.insertEntry(name, 'var', varType)
+                self.symbolTableStack.getCurrentTable().insertEntry(name, 'var', varType)
             
         else:
             self.error("Var")
@@ -258,13 +259,13 @@ class Parser(object):
     def compoundStatement(self):
         if self.lookahead is 'MP_BEGIN':  # 26 CompoundStatement -> "begin" StatementSequence "end"
             self.match('MP_BEGIN')
-            self.analyzer.genLabel(self.symbolTableStack[-1].label)
-            self.analyzer.genIncreaseStack(self.symbolTableStack[-1].size)
+            self.analyzer.genLabel(self.symbolTableStack.getCurrentTable().label)
+            self.analyzer.genIncreaseStack(self.symbolTableStack.getCurrentTable().size)
             self.statementSequence()
             self.match('MP_END')
-#             self.printTableStack()
-            self.analyzer.endProcOrFunc(self.symbolTableStack[-1])
-            self.symbolTableStack.pop()
+            self.symbolTableStack.getCurrentTable().printTable()
+            self.analyzer.endProcOrFunc(self.symbolTableStack.getCurrentTable())
+            self.symbolTableStack.popTable()
         else:
             self.error("begin")
     
@@ -532,7 +533,7 @@ class Parser(object):
         if self.lookahead is 'MP_IDENTIFIER':  # 62 ProcedureStatement -> ProcedureIdentifier OptionalActualParameterList
             procedureName = self.procedureIdentifier()
             self.optionalActualParameterList()
-            label = self.symbolTableStack[-1].find(procedureName)['label']
+            label = self.symbolTableStack.getCurrentTable().find(procedureName)['label']
             self.analyzer.genCall(label)
         else:
             self.error("identifier")
@@ -893,45 +894,5 @@ class Parser(object):
         print "Found " + self.lookahead + " when expected " + expected
         # print the caller
         sys.exit()
-        
- 
-
-    def printTableStack(self):
-        table = self.symbolTableStack[len(self.symbolTableStack)-1]
-        print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
-        print '{0:<1s} {1:10s} {2:10s} {3:<10s} {4:32s} {0:>1s}'.format('|', table.name +"  "+ table.label, 'Nest: '+ str(table.nest), 'Size: '+ str(table.size), 'Next-> '+ str(table.next))
-        print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
-        print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:10s} {5:10s} {6:10s} {0:<1s}'.format('|', 'Name', 'Kind', 'Type', 'Size', 'Offset', 'Label')
-        print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')
-        for entry in table.entries:
-            print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:<10d} {5:<10d} {6:10s} {0:<1s}'.format('|', entry['name'], entry['kind'], entry['type'], entry['size'], entry['offset'], entry['label'])
-        print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')+"\n"
-
-
-    def push(self, name, label, nest=0, size=0, next=None):
-        stack = self.symbolTableStack
-        nest = len(stack)
-        next = stack[-1].name if len(stack) > 0 else None
-        stack.append(SymbolTable(name, nest, size, next, label))
-
-    def insertEntry(self, name, kind, type = "", size= 0, offset = 0, label = ""):
-        table = self.symbolTableStack[-1]
-
-        if kind == 'var':
-            if type == 'Integer':
-                size = 4
-            elif type == 'Float':
-                size = 8
-            elif type == 'Character':
-                size = 1
-
-
-            if len(table.entries) > 0:
-                previous_size = table.entries[-1]['size']
-                previous_offset = table.entries[-1]['offset']
-                offset = previous_size + previous_offset
-
-        table.insert(name, kind, type, size, offset, label)
-   
 
 from Analyzer import Analyzer       
