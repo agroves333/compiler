@@ -86,8 +86,12 @@ class Analyzer(object):
     def genIncreaseStack(self, amount):
         self.output("ADD SP #"+str(amount)+" SP")
         
-    def genDecreaseStack(self, amount):
-        self.output("SUB SP #"+str(amount)+" SP")
+    def endProcOrFunc(self, table):
+        self.output("SUB SP #"+str(table.size)+" SP")
+        if table.label == "L1":
+            self.output("HLT")
+        else:
+            self.genRet()
         
     def genLabel(self, label):
         self.output(label +":")
@@ -96,11 +100,11 @@ class Analyzer(object):
         self.output("BR " + label)
         
     def genCall(self, label):
-        self.output("CALL L" + str(label))
+        self.output("CALL " + label)
     
     def genRet(self):
         self.output("RET")
-    
+
     def processId(self, id):
         for table in Parser.symbolTableStack[::-1]: # Reverse tableStack to search from local to global scope
             result = table.find(id)

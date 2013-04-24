@@ -263,7 +263,7 @@ class Parser(object):
             self.statementSequence()
             self.match('MP_END')
 #             self.printTableStack()
-            self.analyzer.genDecreaseStack(self.symbolTableStack[-1].size)
+            self.analyzer.endProcOrFunc(self.symbolTableStack[-1])
             self.symbolTableStack.pop()
         else:
             self.error("begin")
