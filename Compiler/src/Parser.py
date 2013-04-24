@@ -530,8 +530,10 @@ class Parser(object):
     
     def procedureStatement(self):
         if self.lookahead is 'MP_IDENTIFIER':  # 62 ProcedureStatement -> ProcedureIdentifier OptionalActualParameterList
-            self.procedureIdentifier()
+            procedureName = self.procedureIdentifier()
             self.optionalActualParameterList()
+            label = self.symbolTableStack[-1].find(procedureName)['label']
+            self.analyzer.genCall(label)
         else:
             self.error("identifier")
     
@@ -644,7 +646,7 @@ class Parser(object):
             termTailRec = termRec
 #             print termTailRec
             termTailRec["type"] = self.termTail(termTailRec)
-            expressionRec = termTailRec     # This seems absolutely retarded but it's what Rocky suggested
+            expressionRec = termTailRec     # This is what what Rocky suggested
             return expressionRec
         else:
             self.error("(, identifier, +, -, any literal value, not")

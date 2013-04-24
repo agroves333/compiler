@@ -1,0 +1,15 @@
+{ I am using this file to track the progress of analyzing functions and procedures }
+
+program procedures;
+    var apple: Integer;
+    procedure one;
+        var dog: Integer;
+        begin
+            writeln('one');
+        end;
+    begin
+        writeln('main');
+        one;
+    end.
+
+
