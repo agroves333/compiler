@@ -4,12 +4,13 @@ from Parser import Parser
 class Analyzer(object):
     
     outFile = None
+    symbolTableStack = {}
+    labelNumber = 1
     
     def __init__(self, fileName, symbolTableStack):
         
         self.outFile = open(fileName + '.asm', 'wb')
         self.output('PUSH D0')
-        self.labelNumber = 1
         self.symbolTableStack = symbolTableStack
         
         
