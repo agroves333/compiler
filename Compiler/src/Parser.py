@@ -251,21 +251,21 @@ class Parser(object):
     
     def statementPart(self):
         if self.lookahead is 'MP_BEGIN':  # 25 StatementPart -> CompoundStatement
+            self.analyzer.genLabel(self.symbolTableStack.getCurrentTable().label)
+            self.analyzer.genIncreaseStack(self.symbolTableStack.getCurrentTable().size)
             self.compoundStatement()
+            self.symbolTableStack.getCurrentTable().printTable()
+            self.analyzer.endProcOrFunc(self.symbolTableStack.getCurrentTable())
+            self.symbolTableStack.popTable()
         else:
             self.error("Begin")
         
     
     def compoundStatement(self):
         if self.lookahead is 'MP_BEGIN':  # 26 CompoundStatement -> "begin" StatementSequence "end"
-            self.match('MP_BEGIN')
-            self.analyzer.genLabel(self.symbolTableStack.getCurrentTable().label)
-            self.analyzer.genIncreaseStack(self.symbolTableStack.getCurrentTable().size)
+            self.match('MP_BEGIN')           
             self.statementSequence()
-            self.match('MP_END')
-            self.symbolTableStack.getCurrentTable().printTable()
-            self.analyzer.endProcOrFunc(self.symbolTableStack.getCurrentTable())
-            self.symbolTableStack.popTable()
+            self.match('MP_END')          
         else:
             self.error("begin")
     
@@ -430,6 +430,8 @@ class Parser(object):
         if self.lookahead is 'MP_IF':  # 51 IfStatement -> "if" BooleanExpression "then" Statement OptionalElsePart
             self.match('MP_IF')
             self.booleanExpression()
+            self.analyzer.incrementLabel()
+            self.analyzer.genBranchFalse(self.analyzer.getLabel())
             self.match('MP_THEN')
             self.statement()
             self.optionalElsePart()
@@ -443,6 +445,7 @@ class Parser(object):
         #TODO: Table says else is ambiguous? haven't looked at it yet
         if self.lookahead is 'MP_ELSE':  # 52 OptionalElsePart -> "else" Statement
             self.match('MP_ELSE')
+            self.analyzer.genLabel(self.analyzer.getLabel())
             self.statement()
         elif self.lookahead in ['MP_SCOLON', 'MP_END', 'MP_UNTIL']:  # 53 OptionalElsePart -> lambda
             return
@@ -597,11 +600,14 @@ class Parser(object):
     
     
     def optionalRelationalPart(self):
+        expression_rec = {}
+        
         if self.lookahead in ['MP_EQUAL', 'MP_LTHAN',  # 69 OptionalRelationalPart -> RelationalOperator SimpleExpression
                               'MP_GTHAN', 'MP_LEQUAL',
                               'MP_GEQUAL', 'MP_NEQUAL']:
-            self.relationalOperator()
-            self.simpleExpression()
+            operator = self.relationalOperator()
+            expression_rec = self.simpleExpression()
+            self.analyzer.genBoolean(operator, expression_rec)
         elif self.lookahead in ['MP_SCOLON', 'MP_RPAREN', # 70 OptionalRelationalPart -> lambda
                                 'MP_END', 'MP_COMMA',
                                 'MP_THEN', 'MP_ELSE',
@@ -615,20 +621,20 @@ class Parser(object):
        
     def relationalOperator(self):
         if self.lookahead is 'MP_EQUAL':  # 71 RelationalOperator -> "="
-            self.match('MP_EQUAL')
+            operator = self.match('MP_EQUAL')           
         elif self.lookahead is 'MP_LTHAN':  # 72 RelationalOperator -> "<"
-            self.match('MP_LTHAN')
+            operator = self.match('MP_LTHAN')
         elif self.lookahead is 'MP_GTHAN':  # 73 RelationalOperator -> ">"
-            self.match('MP_GTHAN')
+            operator = self.match('MP_GTHAN')
         elif self.lookahead is 'MP_LEQUAL':  # 74 RelationalOperator -> "<="
-            self.match('MP_LEQUAL')
+            operator = self.match('MP_LEQUAL')
         elif self.lookahead is 'MP_GEQUAL':  # 75 RelationalOperator -> ">="
-            self.match('MP_GEQUAL')
+            operator = self.match('MP_GEQUAL')
         elif self.lookahead is 'MP_NEQUAL':  # 76 RelationalOperator -> "<>"
-            self.match('MP_NEQUAL')
+            operator = self.match('MP_NEQUAL')
         else:
             self.error("an equality operator")
-            
+        return operator    
     
     
     def simpleExpression(self):
@@ -645,8 +651,7 @@ class Parser(object):
             self.optionalSign()
             termRec = self.term()
             termTailRec = termRec
-#             print termTailRec
-            termTailRec["type"] = self.termTail(termTailRec)
+            termTailRec = self.termTail(termTailRec)
             expressionRec = termTailRec     # This is what what Rocky suggested
             return expressionRec
         else:
@@ -662,13 +667,12 @@ class Parser(object):
         if self.lookahead in ['MP_PLUS', 'MP_MINUS', 'MP_OR']:  # 78 TermTail -> AddingOperator Term TermTail
             addopRec["lexeme"] = self.addingOperator()
             termRec = self.term()
-            print termTailRec
-#             print addopRec
-#             print termRec 
             resultRec = self.analyzer.genArithmetic(termTailRec, addopRec, termRec)
             
             self.termTail(resultRec)
             termTailRec = resultRec
+            
+            return termTailRec
             
         elif self.lookahead in ['MP_SCOLON', 'MP_RPAREN', 'MP_END',  # 79 TermTail -> lambda
                                 'MP_COMMA', 'MP_THEN', 'MP_ELSE',
@@ -676,7 +680,7 @@ class Parser(object):
                                 'MP_DOWNTO', 'MP_EQUAL', 'MP_LTHAN',
                                 'MP_GTHAN', 'MP_LEQUAL', 'MP_GEQUAL',
                                 'MP_NEQUAL']:
-            return
+            return termTailRec
         else:
             self.error("+, -, or, ;, ), end, comma, then, else, until, do, to, downto, an equality operator")
             
@@ -796,13 +800,17 @@ class Parser(object):
         elif self.lookahead in ['MP_FIXED_LIT']:  # 113 Factor -> UnsignedFloat
             fixed = self.match('MP_FIXED_LIT')
             self.analyzer.genPushFloat(fixed)
+            return "Fixed"
         elif self.lookahead in ['MP_STRING_LIT']:  # 114 Factor -> StringLiteral
             string = self.match('MP_STRING_LIT')
             self.analyzer.genPushString(string)
+            return "String"
         elif self.lookahead in ['MP_TRUE']:  # 115 Factor -> "True"
             self.match('MP_TRUE')
+            return "True"
         elif self.lookahead in ['MP_FALSE']:  # 116 Factor -> "False"
             self.match('MP_FALSE')
+            return "False"
         else:
             self.error("(, identifier, +, -, any literal value, not")
 

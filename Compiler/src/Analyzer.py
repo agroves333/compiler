@@ -106,6 +106,35 @@ class Analyzer(object):
     
     def genRet(self):
         self.output("RET")
+        
+    def genBoolean(self, operator, expression):
+        if expression["type"] == "Integer":
+            if operator == "=":  # 71 RelationalOperator -> "="
+                self.output("CMPEQS")           
+            elif operator == "<":  # 72 RelationalOperator -> "<"
+                self.output("CMPLTS")
+            elif operator == ">":  # 73 RelationalOperator -> ">"
+                self.output("CMPGTS")
+            elif operator == "<=":  # 74 RelationalOperator -> "<="
+                self.output("CMPLES")
+            elif operator == ">=":  # 75 RelationalOperator -> ">="
+                self.output("CMPGES")
+            elif operator == "<>":  # 76 RelationalOperator -> "<>"
+                self.output("CMPNES")
+        
+        if expression["type"] in ["Float", "Fixed"]:
+            if operator == "=":  # 71 RelationalOperator -> "="
+                self.output("CMPEQSF")           
+            elif operator == "<":  # 72 RelationalOperator -> "<"
+                self.output("CMPLTSF")
+            elif operator == ">":  # 73 RelationalOperator -> ">"
+                self.output("CMPGTSF")
+            elif operator == "<=":  # 74 RelationalOperator -> "<="
+                self.output("CMPLESF")
+            elif operator == ">=":  # 75 RelationalOperator -> ">="
+                self.output("CMPGESF")
+            elif operator == "<>":  # 76 RelationalOperator -> "<>"
+                self.output("CMPNESF")
 
     def processId(self, id):
         for table in self.symbolTableStack.tables[::-1]: # Reverse tableStack to search from local to global scope
@@ -113,6 +142,12 @@ class Analyzer(object):
             if result != None:
                 result["nest"] = table.nest
                 return result
+            
+    def genForLoop(self, control, limit):              
+        pass
+    
+    def genBranchFalse(self, label):
+        self.output("BRFS "+label)
     
 
     def output(self, value):
