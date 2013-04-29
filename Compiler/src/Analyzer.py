@@ -23,7 +23,6 @@ class Analyzer(object):
                 offset = result["offset"]
                 if type == expression_rec["type"]:
                     self.output('POP '+str(offset)+'(D'+str(nest)+')\n')
-
     
     def genArithmetic(self, leftOp, operator, rightOp):
         opIR = ""
@@ -39,6 +38,8 @@ class Analyzer(object):
                         opIR = "MULS"
                     if operator["lexeme"] == "/":
                         opIR = "DIVS"
+                    if operator["lexeme"] == "mod":
+                        opIR = "MODS"
                     
                 if leftOp["type"] in ["Float", "Fixed"]:
                     if operator["lexeme"] == "+":
@@ -49,6 +50,12 @@ class Analyzer(object):
                         opIR = "MULSF"
                     if operator["lexeme"] == "/":
                         opIR = "DIVSF"
+                        
+                if leftOp["type"] == "Boolean":
+                    if operator["lexeme"] == "and":
+                        opIR = "ANDS"
+                    elif operator["lexeme"] == "or":
+                        opIR = "ORS"
                 
         self.output(opIR)
         return {"type": leftOp["type"]}
@@ -86,6 +93,9 @@ class Analyzer(object):
     def genPushString(self, string):
         self.output('PUSH #"'+string+'"')
         
+    def genPushBoolean(self, bool):
+        self.output("PUSH #" + str(bool))
+        
     def genIncreaseStack(self, amount):
         self.output("ADD SP #"+str(amount)+" SP")
         
@@ -97,13 +107,13 @@ class Analyzer(object):
             self.genRet()
         
     def genLabel(self, label):
-        self.output(label +":")
+        self.output("L" + str(label) +":")
         
     def genBranch(self, label):
-        self.output("BR " + label)
+        self.output("BR L" + str(label))
         
     def genCall(self, label):
-        self.output("CALL " + label)
+        self.output("CALL L" + str(label))
     
     def genRet(self):
         self.output("RET")
@@ -148,7 +158,13 @@ class Analyzer(object):
         pass
     
     def genBranchFalse(self, label):
-        self.output("BRFS "+label)
+        self.output("BRFS L" + str(label))
+        
+    def genBranchTrue(self, label):
+        self.output("BRTS L" + str(label))
+        
+    def genNot(self):
+        self.output("NOTS")
     
     def genNeg(self):
         self.output("NEGS")
@@ -157,8 +173,7 @@ class Analyzer(object):
         self.outFile.write(value+"\n")
 
     def getLabel(self):
-        return "L" + str(self.labelNumber)
+        return self.labelNumber
 
     def incrementLabel(self):
         self.labelNumber += 1
-        return self.getLabel()

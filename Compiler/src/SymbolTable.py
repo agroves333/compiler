@@ -43,13 +43,16 @@ class SymbolTable(object):
         size = 0
         offset = 0
         if kind == 'var':
-#             if type == 'Integer':
-#                 size = 4
-#             elif type == 'Float':
-#                 size = 8
-#             elif type == 'Character':
-#                 size = 1
-            size = 1
+            if type == 'Integer':
+                size = 4
+            elif type == 'Float':
+                size = 8
+            elif type == 'Character':
+                size = 1
+            elif type == 'Boolean':
+                size = 1
+            elif type == 'String':
+                size = 256
             offset = self.offset
 
         if self.find(name) is None:
@@ -70,7 +73,7 @@ class SymbolTable(object):
 
     def printTable(self):
         print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
-        print '{0:<1s} {1:10s} {2:10s} {3:<10s} {4:32s} {0:>1s}'.format('|', self.name +"  "+ self.label, 'Nest: '+ str(self.nest), 'Size: '+ str(self.size), 'Next-> '+ str(self.next))
+        print '{0:<1s} {1:10s} {2:10s} {3:<10s} {4:32s} {0:>1s}'.format('|', self.name +"  "+ str(self.label), 'Nest: '+ str(self.nest), 'Size: '+ str(self.size), 'Next-> '+ str(self.next))
         print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
         print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:10s} {5:10s} {6:10s} {0:<1s}'.format('|', 'Name', 'Kind', 'Type', 'Size', 'Offset', 'Label')
         print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')

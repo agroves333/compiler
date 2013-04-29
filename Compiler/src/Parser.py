@@ -385,6 +385,7 @@ class Parser(object):
         if self.lookahead is 'MP_COMMA':  # 46 WriteParameterTail -> "," WriteParameter
             self.match('MP_COMMA')
             self.writeParameter()
+            self.writeParameterTail()
         elif self.lookahead is 'MP_RPAREN':  # 47 WriteParameterTail -> lambda
             return
         else:
@@ -405,8 +406,8 @@ class Parser(object):
     
     def assignmentStatement(self):
         # semantic records
-        expressionRec = {"type":''}
-        identRec = {"name":''}
+        expressionRec = {}
+        identRec = {}
         
         if self.lookahead is 'MP_IDENTIFIER':  # 49 AssignmentStatement -> VariableIdentifier ":=" Expression  OR
             
@@ -457,9 +458,14 @@ class Parser(object):
     def repeatStatement(self):
         if self.lookahead is 'MP_REPEAT':  # 54 RepeatStatement -> "repeat" StatementSequence "until" BooleanExpression
             self.match('MP_REPEAT')
+            self.analyzer.incrementLabel()
+            self.analyzer.genLabel(self.analyzer.getLabel())
             self.statementSequence()
             self.match('MP_UNTIL')
             self.booleanExpression()
+            self.analyzer.genBranchTrue(self.analyzer.getLabel() + 1)
+            self.analyzer.genBranch(self.analyzer.getLabel())
+            self.analyzer.genLabel(self.analyzer.getLabel() + 1)
         else:
             self.error("repeat")
             
@@ -468,32 +474,65 @@ class Parser(object):
     def whileStatement(self):
         if self.lookahead is 'MP_WHILE':  # 55 WhileStatement -> "while" BooleanExpression "do" Statement
             self.match('MP_WHILE')
+            self.analyzer.incrementLabel()
+            self.analyzer.genLabel(self.analyzer.getLabel())
             self.booleanExpression()
+            self.analyzer.genBranchFalse(self.analyzer.getLabel() + 1)
             self.match('MP_DO')
             self.statement()
+            self.analyzer.genBranch(self.analyzer.getLabel())
+            self.analyzer.incrementLabel()
+            self.analyzer.genLabel(self.analyzer.getLabel())
         else:
             self.error("while")
             
     
     
     def forStatement(self):
+        ident_rec = {}
+        expression_rec = {}
+        
         if self.lookahead is 'MP_FOR':  # 56 ForStatement -> "for" ControlVariable ":=" InitialValue StepValue FinalValue "do" Statement
             self.match('MP_FOR')
-            self.controlVariable()
+            ident_rec = self.controlVariable()
             self.match('MP_ASSIGN')
-            self.initialValue()
-            self.stepValue()
+            expression_rec = self.initialValue()
+            self.analyzer.genAssign(ident_rec, expression_rec)
+            step = self.stepValue()
+            self.analyzer.incrementLabel()
+            self.analyzer.genLabel(self.analyzer.getLabel())
             self.finalValue()
+            self.analyzer.genPushId(ident_rec)
+            if(step == "to"):
+                self.analyzer.genBoolean(">", ident_rec)
+                self.analyzer.genBranchTrue(self.analyzer.getLabel() + 1)
+            elif(step == "downto"):
+                self.analyzer.genBoolean("<", ident_rec)
+                self.analyzer.genBranchTrue(self.analyzer.getLabel() + 1)
             self.match('MP_DO')
             self.statement()
+            if(step == "to"):
+                self.analyzer.genPushInt(str(1))
+            elif(step == "downto"):
+                self.analyzer.genPushInt(str(-1))
+            self.analyzer.genPushId(ident_rec)
+            self.analyzer.output("ADDS")
+            self.analyzer.genAssign(ident_rec, expression_rec)
+            self.analyzer.genBranch(self.analyzer.getLabel())
+            self.analyzer.incrementLabel()
+            self.analyzer.genLabel(self.analyzer.getLabel())
         else:
             self.error("for")
             
     
     
     def controlVariable(self):
+        identRec = {}
         if self.lookahead is 'MP_IDENTIFIER':  # 57 ControlVariable -> VariableIdentifier
-            self.variableIdentifier()
+            id = self.variableIdentifier()                
+            identRec = self.analyzer.processId(id)
+            identRec["lexeme"] = id
+            return identRec
         else:
             self.error("identifier")
 
@@ -504,7 +543,7 @@ class Parser(object):
                               'MP_FLOAT_LIT', 'MP_FIXED_LIT', 'MP_STRING_LIT',
                               'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
-            self.ordinalExpression()
+            return self.ordinalExpression()
         else:
             self.error("(, identifier, +, -, any literal value, not")
     
@@ -512,9 +551,9 @@ class Parser(object):
     
     def stepValue(self):
         if self.lookahead is 'MP_TO':  # 59 StepValue -> "to"
-            self.match('MP_TO')
+            return self.match('MP_TO')
         elif self.lookahead is 'MP_DOWNTO':  # 60 StepValue -> "downto"
-            self.match('MP_DOWNTO')
+            return self.match('MP_DOWNTO')
         else:
             self.error("to, downto")
         
@@ -523,8 +562,8 @@ class Parser(object):
     def finalValue(self):
         if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',  # 61 FinalValue -> OrdinalExpression
                               'MP_PLUS', 'MP_MINUS',
-                              'MP_FLOAT_LIT', 'MP_FIXED_LIT', 'MP_STRING_LIT'
-                              'MP_NOT', 'MP_INTEGER_LIT'
+                              'MP_FLOAT_LIT', 'MP_FIXED_LIT', 'MP_STRING_LIT',
+                              'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
             self.ordinalExpression()
         else:
@@ -586,34 +625,38 @@ class Parser(object):
     
     
     def expression(self):
+        expression_rec = {}
         if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',   # 68 Expression -> SimpleExpression OptionalRelationalPart
                               'MP_PLUS', 'MP_MINUS',
                               'MP_FLOAT_LIT', 'MP_FIXED_LIT', 'MP_STRING_LIT',
                               'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
             expression_rec = self.simpleExpression()
-            self.optionalRelationalPart()
+
+            expression_rec = self.optionalRelationalPart(expression_rec)
             return expression_rec
+#             return self.mapTokenToType(self.lookahead)
         else:
             self.error("(, identifier, +, -, any literal value, not")
          
     
     
-    def optionalRelationalPart(self):
-        expression_rec = {}
+    def optionalRelationalPart(self, expression_rec):
         
         if self.lookahead in ['MP_EQUAL', 'MP_LTHAN',  # 69 OptionalRelationalPart -> RelationalOperator SimpleExpression
                               'MP_GTHAN', 'MP_LEQUAL',
                               'MP_GEQUAL', 'MP_NEQUAL']:
             operator = self.relationalOperator()
-            expression_rec = self.simpleExpression()
+            expression_rec = self.simpleExpression()          
             self.analyzer.genBoolean(operator, expression_rec)
+            expression_rec["type"] = 'Boolean'
+            return expression_rec
         elif self.lookahead in ['MP_SCOLON', 'MP_RPAREN', # 70 OptionalRelationalPart -> lambda
                                 'MP_END', 'MP_COMMA',
                                 'MP_THEN', 'MP_ELSE',
                                 'MP_UNTIL','MP_DO', 
                                 'MP_TO', 'MP_DOWNTO']:
-            return
+            return expression_rec
         else:
             self.error("an equality operator, ;, ), then, else, until, do, to, downto")
         
@@ -725,7 +768,7 @@ class Parser(object):
                            'MP_FALSE']:
             
             termRec["type"] = self.factor()
-            self.factorTail()
+            termRec = self.factorTail(termRec)
             return termRec
 #             return self.mapTokenToType(self.lookahead)
         else:
@@ -733,19 +776,24 @@ class Parser(object):
             
             
     
-    def factorTail(self):
+    def factorTail(self, termRec):
+        rightOp = {}
+        operator = {}
+        
         if self.lookahead in ['MP_TIMES', 'MP_DIV',  # 87 FactorTail -> MultiplyingOperator Factor FactorTail
                               'MP_MOD', 'MP_AND', 'MP_SLASH']:
-            self.multiplyingOperator()
-            self.factor()
-            self.factorTail()
+            operator["lexeme"] = self.multiplyingOperator()
+            rightOp["type"] = self.factor()
+            self.analyzer.genArithmetic(termRec, operator, rightOp)
+            self.factorTail(rightOp)
+            return termRec
         elif self.lookahead in ['MP_SCOLON', 'MP_RPAREN', 'MP_END',  # 88 FactorTail -> lambda
                                 'MP_COMMA', 'MP_THEN', 'MP_ELSE',
                                 'MP_UNTIL', 'MP_DO', 'MP_TO', 'MP_DOWNTO',
                                 'MP_EQUAL', 'MP_LTHAN', 'MP_GTHAN',
                                 'MP_LEQUAL', 'MP_GEQUAL', 'MP_NEQUAL',
                                 'MP_PLUS', 'MP_MINUS', 'MP_OR']:
-            return
+            return termRec
         else:
             self.error("*, div, mod, and /, ;, ), end, comma, then, else, until, do, to, downto, an equality operator, +, -, or")
             
@@ -753,17 +801,17 @@ class Parser(object):
             
     def multiplyingOperator(self): 
         if self.lookahead is 'MP_TIMES':    # 89 MultiplyingOperator  -> "*"
-            self.match('MP_TIMES')
+            return self.match('MP_TIMES')
         elif self.lookahead is 'MP_DIV':    # 90 MultiplyingOperator  -> "div"
-            self.match('MP_DIV')
+            return self.match('MP_DIV')
         elif self.lookahead is 'MP_MOD':    # 91 MultiplyingOperator  -> "mod"
-            self.match('MP_MOD')
+            return self.match('MP_MOD')
         elif self.lookahead is 'MP_AND':    # 92 MultiplyingOperator  -> "and"
-            self.match('MP_AND')
+            return self.match('MP_AND')
         elif self.lookahead is 'MP_SLASH':  # 112 MultiplyingOperator -> "/"
-            self.match('MP_SLASH')
+            return self.match('MP_SLASH')
         else:
-            self.error("*, div, mod, and /")
+            self.error("*, div, mod, and, /")
             
     
     
@@ -791,10 +839,13 @@ class Parser(object):
         elif self.lookahead is 'MP_NOT':  # 95 Factor -> "not" Factor
             self.match('MP_NOT');
             self.factor()
+            self.analyzer.genNot()
+            return "Boolean"
         elif self.lookahead is 'MP_LPAREN':  # 96 Factor -> "(" Expression ")"
             self.match('MP_LPAREN')
-            self.expression()
+            type = self.expression()["type"]
             self.match('MP_RPAREN')
+            return type
         elif self.lookahead in ['MP_FLOAT_LIT']:  # 113 Factor -> UnsignedFloat
             float = self.match('MP_FLOAT_LIT')
             self.analyzer.genPushFloat(float)
@@ -802,17 +853,19 @@ class Parser(object):
         elif self.lookahead in ['MP_FIXED_LIT']:  # 113 Factor -> UnsignedFloat
             fixed = self.match('MP_FIXED_LIT')
             self.analyzer.genPushFloat(fixed)
-            return "Fixed"
+            return "Float"
         elif self.lookahead in ['MP_STRING_LIT']:  # 114 Factor -> StringLiteral
             string = self.match('MP_STRING_LIT')
             self.analyzer.genPushString(string)
             return "String"
         elif self.lookahead in ['MP_TRUE']:  # 115 Factor -> "True"
             self.match('MP_TRUE')
-            return "True"
+            self.analyzer.genPushBoolean(1)
+            return "Boolean"
         elif self.lookahead in ['MP_FALSE']:  # 116 Factor -> "False"
             self.match('MP_FALSE')
-            return "False"
+            self.analyzer.genPushBoolean(0)
+            return "Boolean"
         else:
             self.error("(, identifier, +, -, any literal value, not")
 
@@ -864,7 +917,7 @@ class Parser(object):
                               'MP_FLOAT_LIT', 'MP_FIXED_LIT',
                               'MP_STRING_LIT', 'MP_TRUE',
                               'MP_FALSE']):
-            self.expression()
+            return self.expression()
         else:
             self.error("(, identifier, +, -, any literal value, not, +, -")
     
