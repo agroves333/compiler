@@ -842,7 +842,7 @@ class Parser(object):
         elif self.lookahead in ['MP_FIXED_LIT']:  # 113 Factor -> UnsignedFloat
             fixed = self.match('MP_FIXED_LIT')
             self.analyzer.genPushFloat(fixed)
-            return "Fixed"
+            return "Float"
         elif self.lookahead in ['MP_STRING_LIT']:  # 114 Factor -> StringLiteral
             string = self.match('MP_STRING_LIT')
             self.analyzer.genPushString(string)
