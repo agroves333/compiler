@@ -20,8 +20,9 @@ class Analyzer(object):
             if (result != None):
                 type = result["type"]
                 nest = result["nest"]
+                offset = result["offset"]
                 if type == expression_rec["type"]:
-                    self.output('POP D'+nest+'\n')
+                    self.output('POP '+str(offset)+'(D'+str(nest)+')\n')
 
     
     def genArithmetic(self, leftOp, operator, rightOp):
@@ -149,7 +150,9 @@ class Analyzer(object):
     def genBranchFalse(self, label):
         self.output("BRFS "+label)
     
-
+    def genNeg(self):
+        self.output("NEGS")
+    
     def output(self, value):
         self.outFile.write(value+"\n")
 

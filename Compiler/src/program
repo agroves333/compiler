@@ -19,6 +19,10 @@ program lab1;
           pony := a + b;
        end;
     begin
-	   read(h);
-       writeln(zebra, 12);
+       candy := 3;
+	   fred(candy);
+	   
+	   
+	   {read(h);
+       writeln(zebra, 12);}
     end.

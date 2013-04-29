@@ -413,7 +413,7 @@ class Parser(object):
             id = self.variableIdentifier()
             identRec = self.analyzer.processId(id)
             self.match('MP_ASSIGN')
-            expressionRec["type"] = self.expression()
+            expressionRec = self.expression()
             self.analyzer.genAssign(identRec, expressionRec)
             
         # This doesn't change parsing functionality
@@ -591,9 +591,9 @@ class Parser(object):
                               'MP_FLOAT_LIT', 'MP_FIXED_LIT', 'MP_STRING_LIT',
                               'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
-            self.simpleExpression()
+            expression_rec = self.simpleExpression()
             self.optionalRelationalPart()
-#             return self.mapTokenToType(self.lookahead)
+            return expression_rec
         else:
             self.error("(, identifier, +, -, any literal value, not")
          
@@ -648,11 +648,13 @@ class Parser(object):
                               'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
             
-            self.optionalSign()
+            sign = self.optionalSign()
             termRec = self.term()
+            if sign == "-":
+                self.analyzer.genNeg()
             termTailRec = termRec
             termTailRec = self.termTail(termTailRec)
-            expressionRec = termTailRec     # This is what what Rocky suggested
+            expressionRec = termTailRec     # This is what Rocky suggested
             return expressionRec
         else:
             self.error("(, identifier, +, -, any literal value, not")
@@ -690,7 +692,7 @@ class Parser(object):
         if self.lookahead is 'MP_PLUS':  # 80 OptionalSign -> "+"
             self.match('MP_PLUS')
         elif self.lookahead is 'MP_MINUS':  # 81 OptionalSign -> "-"
-            self.match('MP_MINUS')
+            return self.match('MP_MINUS')
         elif self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',  # 82 OptionalSign -> lambda
                                 'MP_NOT', 'MP_INTEGER_LIT',
                                 'MP_FLOAT_LIT', 'MP_FIXED_LIT', 'MP_STRING_LIT',

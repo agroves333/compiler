@@ -43,12 +43,13 @@ class SymbolTable(object):
         size = 0
         offset = 0
         if kind == 'var':
-            if type == 'Integer':
-                size = 4
-            elif type == 'Float':
-                size = 8
-            elif type == 'Character':
-                size = 1
+#             if type == 'Integer':
+#                 size = 4
+#             elif type == 'Float':
+#                 size = 8
+#             elif type == 'Character':
+#                 size = 1
+            size = 1
             offset = self.offset
 
         if self.find(name) is None:
