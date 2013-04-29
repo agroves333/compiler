@@ -488,23 +488,51 @@ class Parser(object):
     
     
     def forStatement(self):
+        ident_rec = {}
+        expression_rec = {}
+        
         if self.lookahead is 'MP_FOR':  # 56 ForStatement -> "for" ControlVariable ":=" InitialValue StepValue FinalValue "do" Statement
             self.match('MP_FOR')
-            self.controlVariable()
+            ident_rec = self.controlVariable()
             self.match('MP_ASSIGN')
-            self.initialValue()
-            self.stepValue()
+            expression_rec = self.initialValue()
+            self.analyzer.genAssign(ident_rec, expression_rec)
+            step = self.stepValue()
+            self.analyzer.incrementLabel()
+            self.analyzer.genLabel(self.analyzer.getLabel())
             self.finalValue()
+            self.analyzer.genPushId(ident_rec)
+            if(step == "to"):
+                self.analyzer.genBoolean(">", ident_rec)
+                self.analyzer.genBranchTrue(self.analyzer.getLabel() + 1)
+                self.analyzer.genPushInt(str(1))
+                self.analyzer.genPushId(ident_rec)
+                self.analyzer.output("ADDS")
+                self.analyzer.genAssign(ident_rec, expression_rec)
+            elif(step == "downto"):
+                self.analyzer.genBoolean("<", ident_rec)
+                self.analyzer.genBranchTrue(self.analyzer.getLabel() + 1)
+                self.analyzer.genPushInt(str(-1))
+                self.analyzer.genPushId(ident_rec)
+                self.analyzer.output("ADDS")
+                self.analyzer.genAssign(ident_rec, expression_rec)
             self.match('MP_DO')
             self.statement()
+            self.analyzer.genBranch(self.analyzer.getLabel())
+            self.analyzer.incrementLabel()
+            self.analyzer.genLabel(self.analyzer.getLabel())
         else:
             self.error("for")
             
     
     
     def controlVariable(self):
+        identRec = {}
         if self.lookahead is 'MP_IDENTIFIER':  # 57 ControlVariable -> VariableIdentifier
-            self.variableIdentifier()
+            id = self.variableIdentifier()                
+            identRec = self.analyzer.processId(id)
+            identRec["lexeme"] = id
+            return identRec
         else:
             self.error("identifier")
 
@@ -515,7 +543,7 @@ class Parser(object):
                               'MP_FLOAT_LIT', 'MP_FIXED_LIT', 'MP_STRING_LIT',
                               'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
-            self.ordinalExpression()
+            return self.ordinalExpression()
         else:
             self.error("(, identifier, +, -, any literal value, not")
     
@@ -523,9 +551,9 @@ class Parser(object):
     
     def stepValue(self):
         if self.lookahead is 'MP_TO':  # 59 StepValue -> "to"
-            self.match('MP_TO')
+            return self.match('MP_TO')
         elif self.lookahead is 'MP_DOWNTO':  # 60 StepValue -> "downto"
-            self.match('MP_DOWNTO')
+            return self.match('MP_DOWNTO')
         else:
             self.error("to, downto")
         
@@ -534,8 +562,8 @@ class Parser(object):
     def finalValue(self):
         if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',  # 61 FinalValue -> OrdinalExpression
                               'MP_PLUS', 'MP_MINUS',
-                              'MP_FLOAT_LIT', 'MP_FIXED_LIT', 'MP_STRING_LIT'
-                              'MP_NOT', 'MP_INTEGER_LIT'
+                              'MP_FLOAT_LIT', 'MP_FIXED_LIT', 'MP_STRING_LIT',
+                              'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
             self.ordinalExpression()
         else:
@@ -879,7 +907,7 @@ class Parser(object):
                               'MP_FLOAT_LIT', 'MP_FIXED_LIT',
                               'MP_STRING_LIT', 'MP_TRUE',
                               'MP_FALSE']):
-            self.expression()
+            return self.expression()
         else:
             self.error("(, identifier, +, -, any literal value, not, +, -")
     
