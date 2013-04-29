@@ -97,13 +97,13 @@ class Analyzer(object):
             self.genRet()
         
     def genLabel(self, label):
-        self.output(label +":")
+        self.output("L" + str(label) +":")
         
     def genBranch(self, label):
-        self.output("BR " + label)
+        self.output("BR L" + str(label))
         
     def genCall(self, label):
-        self.output("CALL " + label)
+        self.output("CALL L" + str(label))
     
     def genRet(self):
         self.output("RET")
@@ -148,15 +148,17 @@ class Analyzer(object):
         pass
     
     def genBranchFalse(self, label):
-        self.output("BRFS "+label)
+        self.output("BRFS L" + str(label))
+        
+    def genBranchTrue(self, label):
+        self.output("BRTS L" + str(label))
     
 
     def output(self, value):
         self.outFile.write(value+"\n")
 
     def getLabel(self):
-        return "L" + str(self.labelNumber)
+        return self.labelNumber
 
     def incrementLabel(self):
         self.labelNumber += 1
-        return self.getLabel()

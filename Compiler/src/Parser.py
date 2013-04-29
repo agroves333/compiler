@@ -457,9 +457,14 @@ class Parser(object):
     def repeatStatement(self):
         if self.lookahead is 'MP_REPEAT':  # 54 RepeatStatement -> "repeat" StatementSequence "until" BooleanExpression
             self.match('MP_REPEAT')
+            self.analyzer.incrementLabel()
+            self.analyzer.genLabel(self.analyzer.getLabel())
             self.statementSequence()
             self.match('MP_UNTIL')
             self.booleanExpression()
+            self.analyzer.genBranchTrue(self.analyzer.getLabel() + 1)
+            self.analyzer.genBranch(self.analyzer.getLabel())
+            self.analyzer.genLabel(self.analyzer.getLabel() + 1)
         else:
             self.error("repeat")
             
@@ -468,9 +473,15 @@ class Parser(object):
     def whileStatement(self):
         if self.lookahead is 'MP_WHILE':  # 55 WhileStatement -> "while" BooleanExpression "do" Statement
             self.match('MP_WHILE')
+            self.analyzer.incrementLabel()
+            self.analyzer.genLabel(self.analyzer.getLabel())
             self.booleanExpression()
+            self.analyzer.genBranchFalse(self.analyzer.getLabel() + 1)
             self.match('MP_DO')
             self.statement()
+            self.analyzer.genBranch(self.analyzer.getLabel())
+            self.analyzer.incrementLabel()
+            self.analyzer.genLabel(self.analyzer.getLabel())
         else:
             self.error("while")
             
