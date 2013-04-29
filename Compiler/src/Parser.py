@@ -405,15 +405,15 @@ class Parser(object):
     
     def assignmentStatement(self):
         # semantic records
-        expressionRec = {"type":''}
-        identRec = {"name":''}
+        expressionRec = {}
+        identRec = {}
         
         if self.lookahead is 'MP_IDENTIFIER':  # 49 AssignmentStatement -> VariableIdentifier ":=" Expression  OR
             
             id = self.variableIdentifier()
             identRec = self.analyzer.processId(id)
             self.match('MP_ASSIGN')
-            expressionRec["type"] = self.expression()
+            expressionRec = self.expression()
             self.analyzer.genAssign(identRec, expressionRec)
             
         # This doesn't change parsing functionality
@@ -586,34 +586,37 @@ class Parser(object):
     
     
     def expression(self):
+        expression_rec = {}
         if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',   # 68 Expression -> SimpleExpression OptionalRelationalPart
                               'MP_PLUS', 'MP_MINUS',
                               'MP_FLOAT_LIT', 'MP_FIXED_LIT', 'MP_STRING_LIT',
                               'MP_NOT', 'MP_INTEGER_LIT',
                               'MP_TRUE', 'MP_FALSE']:
-            self.simpleExpression()
-            self.optionalRelationalPart()
+            expression_rec = self.simpleExpression()
+            expression_rec = self.optionalRelationalPart(expression_rec)
+            return expression_rec
 #             return self.mapTokenToType(self.lookahead)
         else:
             self.error("(, identifier, +, -, any literal value, not")
          
     
     
-    def optionalRelationalPart(self):
-        expression_rec = {}
+    def optionalRelationalPart(self, expression_rec):
         
         if self.lookahead in ['MP_EQUAL', 'MP_LTHAN',  # 69 OptionalRelationalPart -> RelationalOperator SimpleExpression
                               'MP_GTHAN', 'MP_LEQUAL',
                               'MP_GEQUAL', 'MP_NEQUAL']:
             operator = self.relationalOperator()
-            expression_rec = self.simpleExpression()
+            expression_rec = self.simpleExpression()          
             self.analyzer.genBoolean(operator, expression_rec)
+            expression_rec["type"] = 'Boolean'
+            return expression_rec
         elif self.lookahead in ['MP_SCOLON', 'MP_RPAREN', # 70 OptionalRelationalPart -> lambda
                                 'MP_END', 'MP_COMMA',
                                 'MP_THEN', 'MP_ELSE',
                                 'MP_UNTIL','MP_DO', 
                                 'MP_TO', 'MP_DOWNTO']:
-            return
+            return expression_rec
         else:
             self.error("an equality operator, ;, ), then, else, until, do, to, downto")
         
@@ -761,7 +764,7 @@ class Parser(object):
         elif self.lookahead is 'MP_SLASH':  # 112 MultiplyingOperator -> "/"
             self.match('MP_SLASH')
         else:
-            self.error("*, div, mod, and /")
+            self.error("*, div, mod, and, /")
             
     
     
@@ -791,8 +794,9 @@ class Parser(object):
             self.factor()
         elif self.lookahead is 'MP_LPAREN':  # 96 Factor -> "(" Expression ")"
             self.match('MP_LPAREN')
-            self.expression()
+            type = self.expression()["type"]
             self.match('MP_RPAREN')
+            return type
         elif self.lookahead in ['MP_FLOAT_LIT']:  # 113 Factor -> UnsignedFloat
             float = self.match('MP_FLOAT_LIT')
             self.analyzer.genPushFloat(float)
@@ -807,10 +811,12 @@ class Parser(object):
             return "String"
         elif self.lookahead in ['MP_TRUE']:  # 115 Factor -> "True"
             self.match('MP_TRUE')
-            return "True"
+            self.analyzer.genPushBoolean(1)
+            return "Boolean"
         elif self.lookahead in ['MP_FALSE']:  # 116 Factor -> "False"
             self.match('MP_FALSE')
-            return "False"
+            self.analyzer.genPushBoolean(0)
+            return "Boolean"
         else:
             self.error("(, identifier, +, -, any literal value, not")
 

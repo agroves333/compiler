@@ -15,12 +15,11 @@ class Analyzer(object):
         
     def genAssign(self, ident_rec, expression_rec):
         if expression_rec["type"] != None:
-            result = self.processId(ident_rec["name"])
-            if (result != None):
-                type = result["type"]
-                nest = result["nest"]
-                if type == expression_rec["type"]:
-                    self.output('POP D'+nest+'\n')
+            type = ident_rec["type"]
+            nest = ident_rec["nest"]
+            offset = ident_rec["offset"]
+            if type == expression_rec["type"]:
+                self.output('POP ' + str(offset) + '(D' + str(nest) +')')
 
     
     def genArithmetic(self, leftOp, operator, rightOp):
@@ -83,6 +82,9 @@ class Analyzer(object):
     
     def genPushString(self, string):
         self.output('PUSH #"'+string+'"')
+        
+    def genPushBoolean(self, bool):
+        self.output("PUSH #" + str(bool))
         
     def genIncreaseStack(self, amount):
         self.output("ADD SP #"+str(amount)+" SP")

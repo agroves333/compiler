@@ -49,6 +49,10 @@ class SymbolTable(object):
                 size = 8
             elif type == 'Character':
                 size = 1
+            elif type == 'Boolean':
+                size = 1
+            elif type == 'String':
+                size = 256
             offset = self.offset
 
         if self.find(name) is None:
