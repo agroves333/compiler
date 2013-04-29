@@ -505,19 +505,18 @@ class Parser(object):
             if(step == "to"):
                 self.analyzer.genBoolean(">", ident_rec)
                 self.analyzer.genBranchTrue(self.analyzer.getLabel() + 1)
-                self.analyzer.genPushInt(str(1))
-                self.analyzer.genPushId(ident_rec)
-                self.analyzer.output("ADDS")
-                self.analyzer.genAssign(ident_rec, expression_rec)
             elif(step == "downto"):
                 self.analyzer.genBoolean("<", ident_rec)
                 self.analyzer.genBranchTrue(self.analyzer.getLabel() + 1)
-                self.analyzer.genPushInt(str(-1))
-                self.analyzer.genPushId(ident_rec)
-                self.analyzer.output("ADDS")
-                self.analyzer.genAssign(ident_rec, expression_rec)
             self.match('MP_DO')
             self.statement()
+            if(step == "to"):
+                self.analyzer.genPushInt(str(1))
+            elif(step == "downto"):
+                self.analyzer.genPushInt(str(-1))
+            self.analyzer.genPushId(ident_rec)
+            self.analyzer.output("ADDS")
+            self.analyzer.genAssign(ident_rec, expression_rec)
             self.analyzer.genBranch(self.analyzer.getLabel())
             self.analyzer.incrementLabel()
             self.analyzer.genLabel(self.analyzer.getLabel())
