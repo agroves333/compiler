@@ -36,6 +36,8 @@ class Analyzer(object):
                         opIR = "MULS"
                     if operator["lexeme"] == "/":
                         opIR = "DIVS"
+                    if operator["lexeme"] == "mod":
+                        opIR = "MODS"
                     
                 if leftOp["type"] in ["Float", "Fixed"]:
                     if operator["lexeme"] == "+":
@@ -46,6 +48,12 @@ class Analyzer(object):
                         opIR = "MULSF"
                     if operator["lexeme"] == "/":
                         opIR = "DIVSF"
+                        
+                if leftOp["type"] == "Boolean":
+                    if operator["lexeme"] == "and":
+                        opIR = "ANDS"
+                    elif operator["lexeme"] == "or":
+                        opIR = "ORS"
                 
         self.output(opIR)
         return {"type": leftOp["type"]}
@@ -152,6 +160,9 @@ class Analyzer(object):
         
     def genBranchTrue(self, label):
         self.output("BRTS L" + str(label))
+        
+    def genNot(self):
+        self.output("NOTS")
     
 
     def output(self, value):

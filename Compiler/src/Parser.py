@@ -385,6 +385,7 @@ class Parser(object):
         if self.lookahead is 'MP_COMMA':  # 46 WriteParameterTail -> "," WriteParameter
             self.match('MP_COMMA')
             self.writeParameter()
+            self.writeParameterTail()
         elif self.lookahead is 'MP_RPAREN':  # 47 WriteParameterTail -> lambda
             return
         else:
@@ -764,7 +765,7 @@ class Parser(object):
                            'MP_FALSE']:
             
             termRec["type"] = self.factor()
-            self.factorTail()
+            termRec = self.factorTail(termRec)
             return termRec
 #             return self.mapTokenToType(self.lookahead)
         else:
@@ -772,19 +773,24 @@ class Parser(object):
             
             
     
-    def factorTail(self):
+    def factorTail(self, termRec):
+        rightOp = {}
+        operator = {}
+        
         if self.lookahead in ['MP_TIMES', 'MP_DIV',  # 87 FactorTail -> MultiplyingOperator Factor FactorTail
                               'MP_MOD', 'MP_AND', 'MP_SLASH']:
-            self.multiplyingOperator()
-            self.factor()
-            self.factorTail()
+            operator["lexeme"] = self.multiplyingOperator()
+            rightOp["type"] = self.factor()
+            self.analyzer.genArithmetic(termRec, operator, rightOp)
+            self.factorTail(rightOp)
+            return termRec
         elif self.lookahead in ['MP_SCOLON', 'MP_RPAREN', 'MP_END',  # 88 FactorTail -> lambda
                                 'MP_COMMA', 'MP_THEN', 'MP_ELSE',
                                 'MP_UNTIL', 'MP_DO', 'MP_TO', 'MP_DOWNTO',
                                 'MP_EQUAL', 'MP_LTHAN', 'MP_GTHAN',
                                 'MP_LEQUAL', 'MP_GEQUAL', 'MP_NEQUAL',
                                 'MP_PLUS', 'MP_MINUS', 'MP_OR']:
-            return
+            return termRec
         else:
             self.error("*, div, mod, and /, ;, ), end, comma, then, else, until, do, to, downto, an equality operator, +, -, or")
             
@@ -792,15 +798,15 @@ class Parser(object):
             
     def multiplyingOperator(self): 
         if self.lookahead is 'MP_TIMES':    # 89 MultiplyingOperator  -> "*"
-            self.match('MP_TIMES')
+            return self.match('MP_TIMES')
         elif self.lookahead is 'MP_DIV':    # 90 MultiplyingOperator  -> "div"
-            self.match('MP_DIV')
+            return self.match('MP_DIV')
         elif self.lookahead is 'MP_MOD':    # 91 MultiplyingOperator  -> "mod"
-            self.match('MP_MOD')
+            return self.match('MP_MOD')
         elif self.lookahead is 'MP_AND':    # 92 MultiplyingOperator  -> "and"
-            self.match('MP_AND')
+            return self.match('MP_AND')
         elif self.lookahead is 'MP_SLASH':  # 112 MultiplyingOperator -> "/"
-            self.match('MP_SLASH')
+            return self.match('MP_SLASH')
         else:
             self.error("*, div, mod, and, /")
             
@@ -830,6 +836,8 @@ class Parser(object):
         elif self.lookahead is 'MP_NOT':  # 95 Factor -> "not" Factor
             self.match('MP_NOT');
             self.factor()
+            self.analyzer.genNot()
+            return "Boolean"
         elif self.lookahead is 'MP_LPAREN':  # 96 Factor -> "(" Expression ")"
             self.match('MP_LPAREN')
             type = self.expression()["type"]
