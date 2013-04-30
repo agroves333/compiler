@@ -171,9 +171,15 @@ class Parser(object):
             name = self.procedureIdentifier()
             self.analyzer.incrementLabel()
             label = self.analyzer.getLabel()
-            self.symbolTableStack.getCurrentTable().insertEntry(name, 'procedure', label)
+            self.symbolTableStack.getCurrentTable().insertEntry(name, 'procedure', '', label)
             self.symbolTableStack.addTable(name, label)
-            self.optionalFormalParameterList()
+            record = self.optionalFormalParameterList()
+            identList = record["identList"]
+            varType = record["varType"]
+            
+            for id in identList:
+                self.symbolTableStack.getCurrentTable().insertEntry(id, 'param', varType, '', self.firstIdFlag)
+                self.firstIdFlag = False
         else:
             self.error("Procedure")
     
@@ -184,11 +190,18 @@ class Parser(object):
             name = self.functionIdentifier()
             self.analyzer.incrementLabel()
             label = self.analyzer.getLabel()
-            self.symbolTableStack.getCurrentTable().insertEntry(name, 'function', label)
-            self.symbolTableStack.addTable(name, label)
-            self.optionalFormalParameterList()
+            
+            record = self.optionalFormalParameterList()
+            identList = record["identList"]
+            varType = record["varType"]
+            
             self.match("MP_COLON")
-            self.type()
+            type = self.type()
+            self.symbolTableStack.getCurrentTable().insertEntry(name, 'function', type, label)
+            self.symbolTableStack.addTable(name, label)
+            for id in identList:
+                self.symbolTableStack.getCurrentTable().insertEntry(id, 'param', varType, '', self.firstIdFlag)
+                self.firstIdFlag = False
         else:
             self.error("Function")
     
@@ -198,10 +211,10 @@ class Parser(object):
         if self.lookahead is 'MP_LPAREN':  # 17 OptionalFormalParameterList -> "(" FormalParameterSection FormalParameterSectionTail ")"
             self.match('MP_LPAREN')
             self.firstIdFlag = True
-            self.formalParameterSection()
+            identList = self.formalParameterSection()
             self.formalParameterSectionTail()
             self.match('MP_RPAREN')
-            
+            return identList
         elif self.lookahead in ['MP_COLON', 'MP_SCOLON', 'MP_INTEGER', 'MP_FLOAT', 'MP_BOOLEAN', 'MP_STRING']:  # 18 OptionalFormalParameterList -> lambda
             return
         else:
@@ -222,9 +235,9 @@ class Parser(object):
     
     def formalParameterSection(self):
         if self.lookahead is 'MP_IDENTIFIER':  # 21 FormalParameterSection -> ValueParameterSection
-            self.valueParameterSection()
+            return self.valueParameterSection()
         elif self.lookahead is 'MP_VAR':  # 22 FormalParameterSection -> VariableParameterSection
-            self.variableParameterSection()
+            return self.variableParameterSection()
         else:
             self.error("Identifier, Var")
     
@@ -235,9 +248,7 @@ class Parser(object):
             identList = self.identifierList();
             self.match('MP_COLON')
             varType = self.type()
-            for name in identList:
-                self.symbolTableStack.getCurrentTable().insertEntry(name, 'param', varType, '', self.firstIdFlag)
-                self.firstIdFlag = False
+            return {'identList':identList, 'varType':varType}
             
         else:
             self.error("Identifier")
@@ -250,9 +261,7 @@ class Parser(object):
             identList = self.identifierList();
             self.match('MP_COLON')
             varType = self.type()
-            for name in identList:
-                self.symbolTableStack.getCurrentTable().insertEntry(name, 'param', varType, '', self.firstIdFlag)
-                self.firstIdFlag = False
+            return {'identList':identList, 'varType':varType}
         else:
             self.error("Var")
     

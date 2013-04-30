@@ -19,11 +19,11 @@ class SymbolTableStack(object):
         self.tables.append(table)
 
     def getCurrentTable(self):
-        if len(self.tables) >= 1:
-            return self.tables[len(self.tables) - 1]
+        if len(self.tables) > 0:
+            return self.tables[-1]
 
     def popTable(self):
-        if len(self.tables) >= 1:
+        if len(self.tables) > 0:
             self.tables.pop()
 
 
@@ -37,10 +37,11 @@ class SymbolTable(object):
         self.label = label
         self.entries = []
 
+
     def insertEntry(self, name, kind, type='', label='', firstOfKind = False):
 
         offset = 0 
-        if kind in ['var', 'param']:
+        if kind in ['var', 'param', 'function']:
             size = 1
             prevOffset = self.entries[-1]["offset"] if len(self.entries) > 0 else 0
             offset = prevOffset + 4 if firstOfKind else (prevOffset + size)
@@ -48,10 +49,9 @@ class SymbolTable(object):
         else:
             size = 0
 
-
+        
         if self.find(name) is None:
             self.entries.append({"name":name, "kind":kind, "type":type, "size":size, "offset":offset, "label":label})
-            self.size += size
         else:
             print "ERROR: Already have something named " + name + ".  Cannot declare another " + name + "."
             sys.exit()
@@ -70,6 +70,7 @@ class SymbolTable(object):
         print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
         print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:10s} {5:10s} {6:10s} {0:<1s}'.format('|', 'Name', 'Kind', 'Type', 'Size', 'Offset', 'Label')
         print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')
+        
         for entry in self.entries:
-            print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:<10d} {5:<10d} {6:10s} {0:<1s}'.format('|', entry['name'], entry['kind'], entry['type'], entry['size'], entry['offset'], "L"+str(entry['label']))
+            print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:<10d} {5:<10d} {6:10s} {0:<1s}'.format('|', entry['name'], entry['kind'], entry['type'], entry['size'], entry['offset'], "L"+str(entry['label']) if entry['label'] != "" else "")
         print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')+"\n"
