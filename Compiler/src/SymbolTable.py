@@ -71,6 +71,7 @@ class SymbolTable(object):
         for entry in self.entries:
             if entry['name'] == name:
                 return entry
+        
 
     def printTable(self):
         print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')

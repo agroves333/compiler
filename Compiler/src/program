@@ -2,10 +2,11 @@ program lab1;
    var  apple, candy, zebra: Integer;
 		h: Float;
        
-   procedure mixit(a, b: Integer);
+   function mixit(a, b: Integer): Integer;
       var pony: Integer;
       
       function fred(q: Integer): Integer;
+      	 var nod: Integer;
          begin
             fred := q + 1;
          end;
@@ -20,7 +21,7 @@ program lab1;
        end;
     begin
        candy := 3;
-	   mixit(candy);
+	   mary(candy);
 	   
 	   
 	   {read(h);
