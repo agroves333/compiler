@@ -182,7 +182,7 @@ class Analyzer(object):
             if rightOp["type"] == leftOp["type"]:
                 pass
             elif rightOp["type"] == "Float":
-                self.output("CASTSF")
+                self.output("CASTSI")
             else:
                 self.typeError(leftOp["type"], rightOp["type"])
                 
@@ -203,7 +203,7 @@ class Analyzer(object):
             if rightOp["type"] == leftOp["type"]:
                 pass
             elif rightOp["type"] == "Integer":
-                self.output("CASTSI")
+                self.output("CASTSF")
             else:
                 self.typeError(leftOp["type"], rightOp["type"])
                 
