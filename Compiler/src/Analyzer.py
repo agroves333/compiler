@@ -122,11 +122,12 @@ class Analyzer(object):
         
     def finishProcOrFuncAR(self):
         table = self.symbolTableStack.getCurrentTable()
+        # only increment the runtime stack by the size of local variables, not params
         varSize = 0
         for entries in table.entries:
             if entries["kind"] in ["var", "function"]:
                 varSize += 1
-        if varSize > 0:
+        if varSize > 0: # only add code if var's exist (optimization)
             self.output("ADD SP #"+str(varSize)+" SP")
             
         self.output("MOV D" +str(table.nest)+ " (-" +str(table.size + 4) +")SP")
@@ -134,7 +135,16 @@ class Analyzer(object):
         
         
     def endProcOrFunc(self, table):
-        self.output("SUB SP #"+str(table.size)+" SP")
+        self.output("MOV (-" +str(table.size + 4) +")SP D" +str(table.nest))
+        
+        # only decrement the runtime stack by the size of local variables, not params
+        varSize = 0
+        for entries in table.entries:
+            if entries["kind"] in ["var", "function"]:
+                varSize += 1
+        if varSize > 0: # only add code if var's exist (optimization)
+            self.output("SUB SP #"+str(varSize)+" SP")  
+            
         if table.label == 1:
             self.output("HLT")
         else:
