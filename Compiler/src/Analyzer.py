@@ -144,8 +144,7 @@ class Analyzer(object):
         for entries in table.entries:
             if entries["kind"] in ["var", "function"]:
                 varSize += 1
-        if varSize > 0: # only add code if var's exist (optimization)
-            self.incrementSP(varSize + 4)
+        self.incrementSP(varSize + 4)
             
         self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
         self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
@@ -159,8 +158,7 @@ class Analyzer(object):
         for entries in table.entries:
             if entries["kind"] in ["var", "function"]:
                 varSize += 1
-        if varSize > 0: # only add code if var's exist (optimization)
-            self.output("SUB SP #"+str(varSize + 4)+" SP")
+        self.output("SUB SP #"+str(varSize + 4)+" SP")
             
         if table.label == 1:
             self.output("HLT")
