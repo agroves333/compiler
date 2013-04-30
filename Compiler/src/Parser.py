@@ -653,13 +653,14 @@ class Parser(object):
     
     
     def optionalRelationalPart(self, expression_rec):
-        
+        rightOp = {}
+        leftOp = expression_rec
         if self.lookahead in ['MP_EQUAL', 'MP_LTHAN',  # 69 OptionalRelationalPart -> RelationalOperator SimpleExpression
                               'MP_GTHAN', 'MP_LEQUAL',
                               'MP_GEQUAL', 'MP_NEQUAL']:
             operator = self.relationalOperator()
-            expression_rec = self.simpleExpression()          
-            self.analyzer.genBoolean(operator, expression_rec)
+            rightOp = self.simpleExpression()          
+            self.analyzer.genBoolean(operator, leftOp, rightOp)
             expression_rec["type"] = 'Boolean'
             return expression_rec
         elif self.lookahead in ['MP_SCOLON', 'MP_RPAREN', # 70 OptionalRelationalPart -> lambda

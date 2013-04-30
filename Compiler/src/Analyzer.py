@@ -179,8 +179,15 @@ class Analyzer(object):
     def genRet(self):
         self.output("RET")
         
-    def genBoolean(self, operator, expression):
-        if expression["type"] == "Integer":
+    def genBoolean(self, operator, leftOp, rightOp):
+        if leftOp["type"] == "Integer":
+            if rightOp["type"] == leftOp["type"]:
+                pass
+            elif rightOp["type"] == "Float":
+                self.output("CASTSF")
+            else:
+                self.typeError(leftOp["type"], rightOp["type"])
+                
             if operator == "=":  # 71 RelationalOperator -> "="
                 self.output("CMPEQS")           
             elif operator == "<":  # 72 RelationalOperator -> "<"
@@ -194,7 +201,14 @@ class Analyzer(object):
             elif operator == "<>":  # 76 RelationalOperator -> "<>"
                 self.output("CMPNES")
         
-        if expression["type"] in ["Float", "Fixed"]:
+        if leftOp["type"] == "Float":
+            if rightOp["type"] == leftOp["type"]:
+                pass
+            elif rightOp["type"] == "Integer":
+                self.output("CASTSI")
+            else:
+                self.typeError(leftOp["type"], rightOp["type"])
+                
             if operator == "=":  # 71 RelationalOperator -> "="
                 self.output("CMPEQSF")           
             elif operator == "<":  # 72 RelationalOperator -> "<"
