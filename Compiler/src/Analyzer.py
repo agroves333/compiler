@@ -260,6 +260,9 @@ class Analyzer(object):
     def genNeg(self):
         self.output("NEGS")
     
+    def genNegf(self):
+        self.output("NEGSF")
+    
     def output(self, value):
         self.outFile.write(value+"\n")
 
