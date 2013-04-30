@@ -25,6 +25,13 @@ class SymbolTableStack(object):
     def popTable(self):
         if len(self.tables) > 0:
             self.tables.pop()
+            
+    def updateType(self, name, type):
+        for table in self.tables:
+            for entry in table.entries:
+                if entry["name"] == name:
+                    entry["type"] = type
+                    
 
 
 class SymbolTable(object):
@@ -39,7 +46,6 @@ class SymbolTable(object):
 
 
     def insertEntry(self, name, kind, type='', label='', firstOfKind = False):
-
         offset = 0 
         if kind in ['var', 'param', 'function']:
             size = 1
@@ -55,6 +61,8 @@ class SymbolTable(object):
         else:
             print "ERROR: Already have something named " + name + ".  Cannot declare another " + name + "."
             sys.exit()
+    
+    
         
     def setNext(self, next):
         self.next = next
