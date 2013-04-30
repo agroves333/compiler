@@ -36,22 +36,33 @@ class Analyzer(object):
         if (leftOp != None) and (rightOp != None):                
             if leftOp["type"] == "Integer":
                 if rightOp["type"] == "Float":
-                    self.output("CASTSI")
+                    # if int then float, pop float into temporary register,
+                    # cast int to float, push float from temporary register
+                    self.output("POP D9")
+                    self.output("CASTSF")
+                    self.output("PUSH D9")
+                    if operator["lexeme"] == "+":
+                        opIR = "ADDSF"
+                    elif operator["lexeme"] == "-":
+                        opIR = "SUBSF"
+                    elif operator["lexeme"] == "*":
+                        opIR = "MULSF"
+                    elif operator["lexeme"] == "/":
+                        opIR = "DIVSF"
                 elif leftOp["type"] == rightOp["type"]:
-                    pass
+                    if operator["lexeme"] == "+":
+                        opIR = "ADDS"
+                    elif operator["lexeme"] == "-":
+                        opIR = "SUBS"
+                    elif operator["lexeme"] == "*":
+                        opIR = "MULS"
+                    elif operator["lexeme"] == "/":
+                        opIR = "DIVS"
+                    elif operator["lexeme"] == "mod":
+                        opIR = "MODS"
                 else:
                     self.typeError(leftOp["type"], rightOp["type"])
-                    
-                if operator["lexeme"] == "+":
-                    opIR = "ADDS"
-                elif operator["lexeme"] == "-":
-                    opIR = "SUBS"
-                elif operator["lexeme"] == "*":
-                    opIR = "MULS"
-                elif operator["lexeme"] == "/":
-                    opIR = "DIVS"
-                elif operator["lexeme"] == "mod":
-                    opIR = "MODS"
+
                 
             elif leftOp["type"] == "Float":
                 if rightOp["type"] == "Integer":
