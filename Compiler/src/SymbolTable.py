@@ -38,8 +38,7 @@ class SymbolTable(object):
         self.label = label
         self.entries = []
 
-    def insertEntry(self, name, kind, type='', label=''):
-
+    def insertEntry(self, name, kind, type='', label=0):        
         size = 0
         offset = 0
         if kind == 'var':
@@ -73,10 +72,10 @@ class SymbolTable(object):
 
     def printTable(self):
         print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
-        print '{0:<1s} {1:10s} {2:10s} {3:<10s} {4:32s} {0:>1s}'.format('|', self.name +"  "+ str(self.label), 'Nest: '+ str(self.nest), 'Size: '+ str(self.size), 'Next-> '+ str(self.next))
+        print '{0:<1s} {1:10s} {2:10s} {3:<10s} {4:32s} {0:>1s}'.format('|', self.name +"   L"+ str(self.label), 'Nest: '+ str(self.nest), 'Size: '+ str(self.size), 'Next-> '+ str(self.next))
         print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
         print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:10s} {5:10s} {6:10s} {0:<1s}'.format('|', 'Name', 'Kind', 'Type', 'Size', 'Offset', 'Label')
         print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')
         for entry in self.entries:
-            print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:<10d} {5:<10d} {6:10s} {0:<1s}'.format('|', entry['name'], entry['kind'], entry['type'], entry['size'], entry['offset'], entry['label'])
+            print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:<10d} {5:<10d} {6:10s} {0:<1s}'.format('|', entry['name'], entry['kind'], entry['type'], entry['size'], entry['offset'], "L"+str(entry['label']))
         print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')+"\n"

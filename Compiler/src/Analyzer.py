@@ -126,7 +126,7 @@ class Analyzer(object):
         
     def endProcOrFunc(self, table):
         self.output("SUB SP #"+str(table.size)+" SP")
-        if table.label == "L1":
+        if table.label == 1:
             self.output("HLT")
         else:
             self.genRet()
