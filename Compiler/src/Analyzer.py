@@ -187,17 +187,17 @@ class Analyzer(object):
                 self.output("PUSH D9")
                 
                 if operator == "=":  # 71 RelationalOperator -> "="
-                    self.output("CMPEQS")           
+                    self.output("CMPEQSF")           
                 elif operator == "<":  # 72 RelationalOperator -> "<"
-                    self.output("CMPLTS")
+                    self.output("CMPLTSF")
                 elif operator == ">":  # 73 RelationalOperator -> ">"
-                    self.output("CMPGTS")
+                    self.output("CMPGTSF")
                 elif operator == "<=":  # 74 RelationalOperator -> "<="
-                    self.output("CMPLES")
+                    self.output("CMPLESF")
                 elif operator == ">=":  # 75 RelationalOperator -> ">="
-                    self.output("CMPGES")
+                    self.output("CMPGESF")
                 elif operator == "<>":  # 76 RelationalOperator -> "<>"
-                    self.output("CMPNES")
+                    self.output("CMPNESF")
             elif leftOp["type"] == rightOp["type"]:
                 if operator == "=":  # 71 RelationalOperator -> "="
                     self.output("CMPEQS")           
