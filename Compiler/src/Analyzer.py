@@ -22,9 +22,9 @@ class Analyzer(object):
             if id_type == exp_type:
                 pass
             elif (id_type == "Integer") & (exp_type == "Float"):
-                self.output("CASTSF")
-            elif (id_type == "Float") & (exp_type == "Integer"):
                 self.output("CASTSI")
+            elif (id_type == "Float") & (exp_type == "Integer"):
+                self.output("CASTSF")
             else:
                 self.typeError(id_type, exp_type)
             
@@ -36,7 +36,7 @@ class Analyzer(object):
         if (leftOp != None) and (rightOp != None):                
             if leftOp["type"] == "Integer":
                 if rightOp["type"] == "Float":
-                    self.output("CASTSF")
+                    self.output("CASTSI")
                 elif leftOp["type"] == rightOp["type"]:
                     pass
                 else:
@@ -55,7 +55,7 @@ class Analyzer(object):
                 
             elif leftOp["type"] == "Float":
                 if rightOp["type"] == "Integer":
-                    self.output("CASTSI")
+                    self.output("CASTSF")
                 elif leftOp["type"] == rightOp["type"]:
                     pass
                 else:
