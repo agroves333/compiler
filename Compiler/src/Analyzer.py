@@ -49,6 +49,9 @@ class Analyzer(object):
                         opIR = "MULSF"
                     elif operator["lexeme"] == "/":
                         opIR = "DIVSF"
+                    else:
+                        self.opError(operator)
+                        
                 elif leftOp["type"] == rightOp["type"]:
                     if operator["lexeme"] == "+":
                         opIR = "ADDS"
@@ -60,6 +63,8 @@ class Analyzer(object):
                         opIR = "DIVS"
                     elif operator["lexeme"] == "mod":
                         opIR = "MODS"
+                    else:
+                        self.opError(operator)
                 else:
                     self.typeError(leftOp["type"], rightOp["type"])
 
@@ -80,6 +85,8 @@ class Analyzer(object):
                     opIR = "MULSF"
                 elif operator["lexeme"] == "/":
                     opIR = "DIVSF"
+                else:
+                    self.opError(operator)
                     
             elif leftOp["type"] == "Boolean":
                 if leftOp["type"] == rightOp["type"]:
@@ -91,6 +98,9 @@ class Analyzer(object):
                     opIR = "ANDS"
                 elif operator["lexeme"] == "or":
                     opIR = "ORS"
+                else:
+                    self.opError(operator)
+            
                 
         self.output(opIR)
         return {"type": leftOp["type"]}
@@ -279,3 +289,6 @@ class Analyzer(object):
     def invalidError(self, type1):
         print "Invalid type for the current operation: " +str(type1)
         sys.exit()
+        
+    def opError(self, operator):
+        print "Invalid operator for given type: " + str(operator)
