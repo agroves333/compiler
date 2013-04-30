@@ -2,14 +2,19 @@
 
 program procedures;
     var apple: Integer;
-    procedure one;
-        var dog: Integer;
+    procedure one(a: Integer);
+        var dog, apple: Integer;
         begin
             writeln('one');
         end;
+    function two: Integer;
+        var cat: Float;
+        begin
+            writeln('two');
+        end;
     begin
         writeln('main');
-        one;
+        one(3);
     end.
 
 

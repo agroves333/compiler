@@ -1,0 +1,6 @@
+program lab1;
+   var  apple: Integer;
+    begin
+        apple := 3;
+        write(3);
+    end.
