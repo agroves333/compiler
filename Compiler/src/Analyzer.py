@@ -120,6 +120,12 @@ class Analyzer(object):
     def genPushBoolean(self, bool):
         self.output("PUSH #" + str(bool))
         
+    def incrementSP(self, amount):
+        self.output("ADD SP #"+str(amount)+" SP")
+        
+    def decrementSP(self, amount):
+        self.output("SUB SP #"+str(amount)+" SP")
+        
     def finishProcOrFuncAR(self):
         table = self.symbolTableStack.getCurrentTable()
         # only increment the runtime stack by the size of local variables, not params
@@ -128,7 +134,7 @@ class Analyzer(object):
             if entries["kind"] in ["var", "function"]:
                 varSize += 1
         if varSize > 0: # only add code if var's exist (optimization)
-            self.output("ADD SP #"+str(varSize)+" SP")
+            self.incrementSP(varSize)
             
         self.output("MOV D" +str(table.nest)+ " (-" +str(table.size + 4) +")SP")
         self.output("SUB " +str(table.size + 4) +" D"+str(table.nest))
@@ -223,4 +229,5 @@ class Analyzer(object):
         self.labelNumber += 1
         
     def typeError(self, type1, type2): 
-        sys.exit("Type mismatch error: " + str(type1) + " and " + str(type2))
+        print "Type mismatch error: " + str(type1) + " and " + str(type2)
+        sys.exit()

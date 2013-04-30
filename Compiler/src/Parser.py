@@ -579,10 +579,15 @@ class Parser(object):
     
     def procedureStatement(self):
         if self.lookahead is 'MP_IDENTIFIER':  # 62 ProcedureStatement -> ProcedureIdentifier OptionalActualParameterList
+            self.analyzer.incrementSP(4) # leave space for function/procedure
             procedureName = self.procedureIdentifier()
             self.optionalActualParameterList()
-            label = self.symbolTableStack.getCurrentTable().find(procedureName)['label']
-            self.analyzer.genCall(label)
+            entry = self.symbolTableStack.getCurrentTable().find(procedureName)
+            if entry != None:
+                self.analyzer.genCall(entry['label'])
+            else:
+                print "Error: "+procedureName+" not found. It either doesn't exist or out of scope."
+                sys.exit()
         else:
             self.error("identifier")
     
@@ -832,6 +837,7 @@ class Parser(object):
         elif self.lookahead is 'MP_IDENTIFIER':  # 94 Factor -> VariableIdentifier  OR  # 97 Factor -> FunctionIdentifier OptionalActualParameterList
             id_kind = self.analyzer.processId(self.scanner.lexeme)["kind"]
             if id_kind == "function":
+                self.analyzer.incrementSP(4) # leave space for function/procedure's display register
                 id = self.functionIdentifier()
                 self.optionalActualParameterList()
             elif id_kind in ["var", "param"]:
@@ -952,14 +958,14 @@ class Parser(object):
             self.error("comma, :")
 
     def error(self, expected):
-        print "Syntax error found on line " + str(self.scanner.getLineNumber()) + ", column " + str(self.scanner.getColumnNumber())
+        print "ERROR: Syntax error found on line " + str(self.scanner.getLineNumber()) + ", column " + str(self.scanner.getColumnNumber())
         print "Found " + self.scanner.lexeme + " when expected one of: " + expected
         # print the caller
 #         print inspect.stack()[1][3]
         sys.exit()
         
     def matchError(self, expected):
-        print "Match error found on line " + str(self.scanner.getLineNumber()) + ", column " + str(self.scanner.getColumnNumber()) + " lexeme: " + self.scanner.lexeme
+        print "ERROR: Match error found on line " + str(self.scanner.getLineNumber()) + ", column " + str(self.scanner.getColumnNumber()) + " lexeme: " + self.scanner.lexeme
         print "Found " + self.lookahead + " when expected " + expected
         # print the caller
         sys.exit()
