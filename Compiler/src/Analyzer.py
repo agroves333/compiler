@@ -135,6 +135,8 @@ class Analyzer(object):
         
         
     def endProcOrFunc(self, table):
+        self.output("MOV (-" +str(table.size + 4) +")SP D" +str(table.nest))
+        
         # only decrement the runtime stack by the size of local variables, not params
         varSize = 0
         for entries in table.entries:
