@@ -11,7 +11,7 @@ class Parser(object):
     sourceFile = None
     symbolTableStack = None
     lookahead = ''
-    
+    firstIdFlag = False
     
     # Constructor
     def __init__(self, fileName):
@@ -77,8 +77,10 @@ class Parser(object):
     
     
     def variableDeclarationPart(self):
+        
         if self.lookahead is "MP_VAR":  # 5 VariableDeclarationPart -> "var" VariableDeclaration ";" VariableDeclarationTail
             self.match("MP_VAR")
+            self.firstIdFlag = True
             self.variableDeclaration()
             self.match("MP_SCOLON")
             self.variableDeclarationTail()
@@ -107,7 +109,8 @@ class Parser(object):
             self.match("MP_COLON")
             varType = self.type()
             for name in idList:
-                self.symbolTableStack.getCurrentTable().insertEntry(name, 'var', varType)
+                self.symbolTableStack.getCurrentTable().insertEntry(name, 'var', varType, '', self.firstIdFlag)
+                self.firstIdFlag = False
         else:
             self.error("MP_IDENTIFIER")
     
@@ -192,6 +195,7 @@ class Parser(object):
     def optionalFormalParameterList(self):
         if self.lookahead is 'MP_LPAREN':  # 17 OptionalFormalParameterList -> "(" FormalParameterSection FormalParameterSectionTail ")"
             self.match('MP_LPAREN')
+            self.firstIdFlag = True
             self.formalParameterSection()
             self.formalParameterSectionTail()
             self.match('MP_RPAREN')
@@ -230,7 +234,9 @@ class Parser(object):
             self.match('MP_COLON')
             varType = self.type()
             for name in identList:
-                self.symbolTableStack.getCurrentTable().insertEntry(name, 'var', varType)
+                self.symbolTableStack.getCurrentTable().insertEntry(name, 'param', varType, '', self.firstIdFlag)
+                self.firstIdFlag = False
+            
         else:
             self.error("Identifier")
     
@@ -243,8 +249,8 @@ class Parser(object):
             self.match('MP_COLON')
             varType = self.type()
             for name in identList:
-                self.symbolTableStack.getCurrentTable().insertEntry(name, 'var', varType)
-            
+                self.symbolTableStack.getCurrentTable().insertEntry(name, 'param', varType, '', self.firstIdFlag)
+                self.firstIdFlag = False
         else:
             self.error("Var")
     
@@ -252,7 +258,6 @@ class Parser(object):
     def statementPart(self):
         if self.lookahead is 'MP_BEGIN':  # 25 StatementPart -> CompoundStatement
             self.analyzer.genLabel(self.symbolTableStack.getCurrentTable().label)
-            self.analyzer.genIncreaseStack(self.symbolTableStack.getCurrentTable().size)
             self.compoundStatement()
             self.symbolTableStack.getCurrentTable().printTable()
             self.analyzer.endProcOrFunc(self.symbolTableStack.getCurrentTable())
@@ -263,7 +268,8 @@ class Parser(object):
     
     def compoundStatement(self):
         if self.lookahead is 'MP_BEGIN':  # 26 CompoundStatement -> "begin" StatementSequence "end"
-            self.match('MP_BEGIN')           
+            self.match('MP_BEGIN')
+            self.analyzer.finishProcOrFuncAR()         
             self.statementSequence()
             self.match('MP_END')          
         else:
@@ -816,7 +822,7 @@ class Parser(object):
     
     
     def factor(self):
-        # semntic record
+        # semantic record
         identRec = {}
         
         if self.lookahead in ['MP_INTEGER_LIT']:  # 93 Factor -> UnsignedInteger
@@ -827,13 +833,13 @@ class Parser(object):
             id_kind = self.analyzer.processId(self.scanner.lexeme)["kind"]
             if id_kind == "function":
                 id = self.functionIdentifier()
-            elif id_kind == "var":
+                self.optionalActualParameterList()
+            elif id_kind in ["var", "param"]:
                 id = self.variableIdentifier()
                 
                 identRec["lexeme"] = id
                 self.analyzer.genPushId(identRec)
                 
-            self.optionalActualParameterList()
             return self.analyzer.processId(id)["type"]
         
         elif self.lookahead is 'MP_NOT':  # 95 Factor -> "not" Factor

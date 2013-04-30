@@ -10,7 +10,7 @@ class Analyzer(object):
     def __init__(self, fileName, symbolTableStack):
         
         self.outFile = open(fileName + '.asm', 'wb')
-        self.output('PUSH D0')
+#         self.output('PUSH D0')
         self.symbolTableStack = symbolTableStack
         
         
@@ -96,8 +96,13 @@ class Analyzer(object):
     def genPushBoolean(self, bool):
         self.output("PUSH #" + str(bool))
         
-    def genIncreaseStack(self, amount):
-        self.output("ADD SP #"+str(amount)+" SP")
+    def finishProcOrFuncAR(self):
+        table = self.symbolTableStack.getCurrentTable()
+        varSize = 0
+        for entries in table.entries:
+            if entries["kind"] == "var":
+                varSize += 1
+        self.output("ADD SP #"+str(varSize)+" SP")
         
     def endProcOrFunc(self, table):
         self.output("SUB SP #"+str(table.size)+" SP")
@@ -177,3 +182,4 @@ class Analyzer(object):
 
     def incrementLabel(self):
         self.labelNumber += 1
+        return str(self.labelNumber)

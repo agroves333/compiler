@@ -33,32 +33,25 @@ class SymbolTable(object):
         self.name = name
         self.nest = nest
         self.size = 0
-        self.offset = 0
         self.next = next
         self.label = label
         self.entries = []
 
-    def insertEntry(self, name, kind, type='', label=''):
+    def insertEntry(self, name, kind, type='', label='', firstOfKind = False):
 
-        size = 0
-        offset = 0
-        if kind == 'var':
-            if type == 'Integer':
-                size = 4
-            elif type == 'Float':
-                size = 8
-            elif type == 'Character':
-                size = 1
-            elif type == 'Boolean':
-                size = 1
-            elif type == 'String':
-                size = 256
-            offset = self.offset
+        offset = 0 
+        if kind in ['var', 'param']:
+            size = 1
+            prevOffset = self.entries[-1]["offset"] if len(self.entries) > 0 else 0
+            offset = prevOffset + 4 if firstOfKind else (prevOffset + size)
+            
+        else:
+            size = 0
+             
 
         if self.find(name) is None:
             self.entries.append({"name":name, "kind":kind, "type":type, "size":size, "offset":offset, "label":label})
             self.size += size
-            self.offset += size
         else:
             print "ERROR: Already have something named " + name + ".  Cannot declare another " + name + "."
             sys.exit()
