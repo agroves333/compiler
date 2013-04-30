@@ -4,19 +4,16 @@ from Parser import Parser
 class Analyzer(object):
     
     outFile = None
-    symbolTableStack = {}
-    labelNumber = 1
     
     def __init__(self, fileName, symbolTableStack):
         
         self.outFile = open(fileName + '.asm', 'wb')
-#         self.output('PUSH D0')
+        self.labelNumber = 1
         self.symbolTableStack = symbolTableStack
         
         
     def genAssign(self, ident_rec, expression_rec):
         if expression_rec["type"] != None:
-
             id_type = ident_rec["type"]
             nest = ident_rec["nest"]
             offset = ident_rec["offset"]
@@ -127,9 +124,14 @@ class Analyzer(object):
         table = self.symbolTableStack.getCurrentTable()
         varSize = 0
         for entries in table.entries:
-            if entries["kind"] == "var":
+            if entries["kind"] in ["var", "function"]:
                 varSize += 1
-        self.output("ADD SP #"+str(varSize)+" SP")
+        if varSize > 0:
+            self.output("ADD SP #"+str(varSize)+" SP")
+            
+        self.output("MOV D" +str(table.nest)+ " (-" +str(table.size + 4) +")SP")
+        self.output("SUB " +str(table.size + 4) +" D"+str(table.nest))
+        
         
     def endProcOrFunc(self, table):
         self.output("SUB SP #"+str(table.size)+" SP")
@@ -209,10 +211,6 @@ class Analyzer(object):
 
     def incrementLabel(self):
         self.labelNumber += 1
-<<<<<<< HEAD
-        return str(self.labelNumber)
-=======
         
-    def typeError(self, type1, type2):
-        sys.exit("Type mismatch error: " + type1 + " and " + type2)
->>>>>>> branch 'master' of git@github.com:dmallon/compiler.git
+    def typeError(self, type1, type2): 
+        sys.exit("Type mismatch error: " + str(type1) + " and " + str(type2))
