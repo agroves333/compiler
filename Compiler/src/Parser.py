@@ -501,8 +501,8 @@ class Parser(object):
             step = self.stepValue()
             self.analyzer.incrementLabel()
             self.analyzer.genLabel(self.analyzer.getLabel())
-            self.finalValue()
             self.analyzer.genPushId(ident_rec)
+            self.finalValue()
             if(step == "to"):
                 self.analyzer.genBoolean(">", ident_rec)
                 self.analyzer.genBranchTrue(self.analyzer.getLabel() + 1)

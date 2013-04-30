@@ -15,45 +15,72 @@ class Analyzer(object):
         
     def genAssign(self, ident_rec, expression_rec):
         if expression_rec["type"] != None:
-            type = ident_rec["type"]
+            id_type = ident_rec["type"]
             nest = ident_rec["nest"]
             offset = ident_rec["offset"]
-            if type == expression_rec["type"]:
-                self.output('POP ' + str(offset) + '(D' + str(nest) +')')
+            exp_type = expression_rec["type"]
+            
+            if id_type == exp_type:
+                pass
+            elif (id_type == "Integer") & (exp_type == "Float"):
+                self.output("CASTSF")
+            elif (id_type == "Float") & (exp_type == "Integer"):
+                self.output("CASTSI")
+            else:
+                self.typeError(id_type, exp_type)
+            
+            self.output('POP ' + str(offset) + '(D' + str(nest) +')')
 
     
     def genArithmetic(self, leftOp, operator, rightOp):
         opIR = ""
-        if (leftOp != None) and (rightOp != None):
-            if leftOp["type"] == rightOp["type"]:
-                
-                if leftOp["type"] == "Integer":
-                    if operator["lexeme"] == "+":
-                        opIR = "ADDS"
-                    if operator["lexeme"] == "-":
-                        opIR = "SUBS"
-                    if operator["lexeme"] == "*":
-                        opIR = "MULS"
-                    if operator["lexeme"] == "/":
-                        opIR = "DIVS"
-                    if operator["lexeme"] == "mod":
-                        opIR = "MODS"
+        if (leftOp != None) and (rightOp != None):                
+            if leftOp["type"] == "Integer":
+                if rightOp["type"] == "Float":
+                    self.output("CASTSF")
+                elif leftOp["type"] == rightOp["type"]:
+                    pass
+                else:
+                    self.typeError(leftOp["type"], rightOp["type"])
                     
-                if leftOp["type"] in ["Float", "Fixed"]:
-                    if operator["lexeme"] == "+":
-                        opIR = "ADDSF"
-                    if operator["lexeme"] == "-":
-                        opIR = "SUBSF"
-                    if operator["lexeme"] == "*":
-                        opIR = "MULSF"
-                    if operator["lexeme"] == "/":
-                        opIR = "DIVSF"
-                        
-                if leftOp["type"] == "Boolean":
-                    if operator["lexeme"] == "and":
-                        opIR = "ANDS"
-                    elif operator["lexeme"] == "or":
-                        opIR = "ORS"
+                if operator["lexeme"] == "+":
+                    opIR = "ADDS"
+                elif operator["lexeme"] == "-":
+                    opIR = "SUBS"
+                elif operator["lexeme"] == "*":
+                    opIR = "MULS"
+                elif operator["lexeme"] == "/":
+                    opIR = "DIVS"
+                elif operator["lexeme"] == "mod":
+                    opIR = "MODS"
+                
+            elif leftOp["type"] == "Float":
+                if rightOp["type"] == "Integer":
+                    self.output("CASTSI")
+                elif leftOp["type"] == rightOp["type"]:
+                    pass
+                else:
+                    self.typeError(leftOp["type"], rightOp["type"])
+                    
+                if operator["lexeme"] == "+":
+                    opIR = "ADDSF"
+                elif operator["lexeme"] == "-":
+                    opIR = "SUBSF"
+                elif operator["lexeme"] == "*":
+                    opIR = "MULSF"
+                elif operator["lexeme"] == "/":
+                    opIR = "DIVSF"
+                    
+            elif leftOp["type"] == "Boolean":
+                if leftOp["type"] == rightOp["type"]:
+                    pass
+                else:
+                    self.typeError(leftOp["type"], rightOp["type"])
+                    
+                if operator["lexeme"] == "and":
+                    opIR = "ANDS"
+                elif operator["lexeme"] == "or":
+                    opIR = "ORS"
                 
         self.output(opIR)
         return {"type": leftOp["type"]}
@@ -173,3 +200,6 @@ class Analyzer(object):
 
     def incrementLabel(self):
         self.labelNumber += 1
+        
+    def typeError(self, type1, type2):
+        sys.exit("Type mismatch error: " + type1 + " and " + type2)
