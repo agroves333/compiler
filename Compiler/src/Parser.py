@@ -705,8 +705,12 @@ class Parser(object):
             
             sign = self.optionalSign()
             termRec = self.term()
+            type = termRec['type']
             if sign == "-":
-                self.analyzer.genNeg()
+                if type == "Integer":
+                    self.analyzer.genNeg()
+                elif type in ["Float", "Fixed"]:
+                    self.analyzer.genNegf()
             termTailRec = termRec
             termTailRec = self.termTail(termTailRec)
             expressionRec = termTailRec     # This is what Rocky suggested
