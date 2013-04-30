@@ -47,11 +47,11 @@ class SymbolTable(object):
 
     def insertEntry(self, name, kind, type='', label='', firstOfKind = False):
         offset = 0 
-        if kind in ['var', 'param', 'function']:
+        if kind in ['var', 'param']:
             size = 1
             prevOffset = self.entries[-1]["offset"] if len(self.entries) > 0 else 0
             offset = prevOffset + 4 if firstOfKind else (prevOffset + size)
-            
+            self.size += 1
         else:
             size = 0
 
