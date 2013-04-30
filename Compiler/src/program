@@ -20,7 +20,7 @@ program lab1;
        end;
     begin
        candy := 3;
-	   fred(candy);
+	   mixit(candy);
 	   
 	   
 	   {read(h);

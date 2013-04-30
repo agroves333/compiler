@@ -169,8 +169,9 @@ class Parser(object):
         if self.lookahead is "MP_PROCEDURE":  # 15 ProcedureHeading -> "procedure" procedureIdentifier OptionalFormalParameterList
             self.match("MP_PROCEDURE")
             name = self.procedureIdentifier()
-            label = self.analyzer.incrementLabel()
-            self.symbolTableStack.getCurrentTable().insertEntry(name, 'procedure', label=label)
+            self.analyzer.incrementLabel()
+            label = self.analyzer.getLabel()
+            self.symbolTableStack.getCurrentTable().insertEntry(name, 'procedure', label)
             self.symbolTableStack.addTable(name, label)
             self.optionalFormalParameterList()
         else:
@@ -181,8 +182,9 @@ class Parser(object):
         if self.lookahead is "MP_FUNCTION":  # 16 FunctionHeading -> "function" functionIdentifier OptionalFormalParameterList ":" Type
             self.match("MP_FUNCTION")
             name = self.functionIdentifier()
-            label = self.analyzer.incrementLabel()
-            self.symbolTableStack.getCurrentTable().insertEntry(name, 'function', label=label)
+            self.analyzer.incrementLabel()
+            label = self.analyzer.getLabel()
+            self.symbolTableStack.getCurrentTable().insertEntry(name, 'function', label)
             self.symbolTableStack.addTable(name, label)
             self.optionalFormalParameterList()
             self.match("MP_COLON")
@@ -507,8 +509,8 @@ class Parser(object):
             step = self.stepValue()
             self.analyzer.incrementLabel()
             self.analyzer.genLabel(self.analyzer.getLabel())
-            self.finalValue()
             self.analyzer.genPushId(ident_rec)
+            self.finalValue()
             if(step == "to"):
                 self.analyzer.genBoolean(">", ident_rec)
                 self.analyzer.genBranchTrue(self.analyzer.getLabel() + 1)
