@@ -134,14 +134,14 @@ class Analyzer(object):
             if entries["kind"] in ["var", "function"]:
                 varSize += 1
         if varSize > 0: # only add code if var's exist (optimization)
-            self.incrementSP(varSize)
+            self.incrementSP(varSize + 4)
             
-        self.output("MOV D" +str(table.nest)+ " (-" +str(table.size + 4) +")SP")
-        self.output("SUB " +str(table.size + 4) +" D"+str(table.nest))
+        self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
+        self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
         
         
     def endProcOrFunc(self, table):
-        self.output("MOV (-" +str(table.size + 4) +")SP D" +str(table.nest))
+        self.output("MOV -" +str(table.size + 4) +"(SP) D" +str(table.nest))
         
         # only decrement the runtime stack by the size of local variables, not params
         varSize = 0
@@ -149,7 +149,7 @@ class Analyzer(object):
             if entries["kind"] in ["var", "function"]:
                 varSize += 1
         if varSize > 0: # only add code if var's exist (optimization)
-            self.output("SUB SP #"+str(varSize)+" SP")  
+            self.output("SUB SP #"+str(varSize + 4)+" SP")
             
         if table.label == 1:
             self.output("HLT")
