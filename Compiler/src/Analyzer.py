@@ -179,27 +179,42 @@ class Analyzer(object):
         
     def genBoolean(self, operator, leftOp, rightOp):
         if leftOp["type"] == "Integer":
-            if rightOp["type"] == leftOp["type"]:
-                pass
-            elif rightOp["type"] == "Float":
-                self.output("CASTSI")
+            if rightOp["type"] == "Float":
+                # if int then float, pop float into temporary register,
+                # cast int to float, push float from temporary register
+                self.output("POP D9")
+                self.output("CASTSF")
+                self.output("PUSH D9")
+                
+                if operator == "=":  # 71 RelationalOperator -> "="
+                    self.output("CMPEQS")           
+                elif operator == "<":  # 72 RelationalOperator -> "<"
+                    self.output("CMPLTS")
+                elif operator == ">":  # 73 RelationalOperator -> ">"
+                    self.output("CMPGTS")
+                elif operator == "<=":  # 74 RelationalOperator -> "<="
+                    self.output("CMPLES")
+                elif operator == ">=":  # 75 RelationalOperator -> ">="
+                    self.output("CMPGES")
+                elif operator == "<>":  # 76 RelationalOperator -> "<>"
+                    self.output("CMPNES")
+            elif leftOp["type"] == rightOp["type"]:
+                if operator == "=":  # 71 RelationalOperator -> "="
+                    self.output("CMPEQS")           
+                elif operator == "<":  # 72 RelationalOperator -> "<"
+                    self.output("CMPLTS")
+                elif operator == ">":  # 73 RelationalOperator -> ">"
+                    self.output("CMPGTS")
+                elif operator == "<=":  # 74 RelationalOperator -> "<="
+                    self.output("CMPLES")
+                elif operator == ">=":  # 75 RelationalOperator -> ">="
+                    self.output("CMPGES")
+                elif operator == "<>":  # 76 RelationalOperator -> "<>"
+                    self.output("CMPNES")
             else:
                 self.typeError(leftOp["type"], rightOp["type"])
-                
-            if operator == "=":  # 71 RelationalOperator -> "="
-                self.output("CMPEQS")           
-            elif operator == "<":  # 72 RelationalOperator -> "<"
-                self.output("CMPLTS")
-            elif operator == ">":  # 73 RelationalOperator -> ">"
-                self.output("CMPGTS")
-            elif operator == "<=":  # 74 RelationalOperator -> "<="
-                self.output("CMPLES")
-            elif operator == ">=":  # 75 RelationalOperator -> ">="
-                self.output("CMPGES")
-            elif operator == "<>":  # 76 RelationalOperator -> "<>"
-                self.output("CMPNES")
         
-        if leftOp["type"] == "Float":
+        elif leftOp["type"] == "Float":
             if rightOp["type"] == leftOp["type"]:
                 pass
             elif rightOp["type"] == "Integer":
@@ -219,6 +234,9 @@ class Analyzer(object):
                 self.output("CMPGESF")
             elif operator == "<>":  # 76 RelationalOperator -> "<>"
                 self.output("CMPNESF")
+                
+        else:
+            self.invalidError(leftOp["type"])
 
     def processId(self, id):
         for table in self.symbolTableStack.tables[::-1]: # Reverse tableStack to search from local to global scope
@@ -253,4 +271,8 @@ class Analyzer(object):
         
     def typeError(self, type1, type2): 
         print "Type mismatch error: " + str(type1) + " and " + str(type2)
+        sys.exit()
+        
+    def invalidError(self, type1):
+        print "Invalid type for the current operation: " +str(type1)
         sys.exit()
