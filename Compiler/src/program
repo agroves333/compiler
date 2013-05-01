@@ -1,7 +1,5 @@
-Program Expression_test_3;
-var f: Float;
+Program Expression_test_2;
 BEGIN
-f := 2.33E5
-
+writeln( FALSE + 2 );
 END
 .
