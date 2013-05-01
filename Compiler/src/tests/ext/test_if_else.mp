@@ -1,7 +1,7 @@
 Program IF_else;
 VAR A : Integer;
 BEGIN
-A := 2;
+A := 4;
 if( A > 3 )
 then
 BEGIN

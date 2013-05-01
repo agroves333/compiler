@@ -1,7 +1,7 @@
 Program SimpleIF;
 VAR A : Integer;
 BEGIN
-A := 4;
+A := 2;
 if( A > 3 )
 then
   writeln('A is greater than 3')

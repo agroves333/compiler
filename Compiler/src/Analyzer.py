@@ -49,8 +49,11 @@ class Analyzer(object):
                         opIR = "MULSF"
                     elif operator["lexeme"] == "/":
                         opIR = "DIVSF"
+                    elif operator["lexeme"] == "div":
+                        opIR = "DIVSF" + "\n" + "CASTSI"    
+                        
                     else:
-                        self.opError(operator)
+                        self.opError(leftOp["type"], operator["lexeme"])
                         
                 elif leftOp["type"] == rightOp["type"]:
                     if operator["lexeme"] == "+":
@@ -63,8 +66,10 @@ class Analyzer(object):
                         opIR = "DIVS"
                     elif operator["lexeme"] == "mod":
                         opIR = "MODS"
+                    elif operator["lexeme"] == "div":
+                        opIR = "DIVS" + "\n" + "CASTSI" 
                     else:
-                        self.opError(operator)
+                        self.opError(leftOp["type"], operator["lexeme"])
                 else:
                     self.typeError(leftOp["type"], rightOp["type"])
 
@@ -85,9 +90,11 @@ class Analyzer(object):
                     opIR = "MULSF"
                 elif operator["lexeme"] == "/":
                     opIR = "DIVSF"
+                elif operator["lexeme"] == "div":
+                    opIR = "DIVSF" + "\n" + "CASTSI"
                 else:
-                    self.opError(operator)
-
+                    self.opError(leftOp["type"], operator["lexeme"])
+                    
             elif leftOp["type"] == "Boolean":
                 if leftOp["type"] == rightOp["type"]:
                     pass
@@ -99,7 +106,10 @@ class Analyzer(object):
                 elif operator["lexeme"] == "or":
                     opIR = "ORS"
                 else:
-                    self.opError(operator)
+                    self.opError(leftOp["type"], operator["lexeme"])
+                    
+            else:
+                self.opError(leftOp["type"], operator["lexeme"])
             
                 
         self.output(opIR)
@@ -248,7 +258,7 @@ class Analyzer(object):
                 self.output("CMPNESF")
                 
         else:
-            self.invalidError(leftOp["type"])
+            self.opError(leftOp["type"], operator)
 
     def processId(self, id):
         for table in self.symbolTableStack.tables[::-1]: # Reverse tableStack to search from local to global scope
@@ -291,6 +301,7 @@ class Analyzer(object):
     def invalidError(self, type1):
         print "Invalid type for the current operation: " +str(type1)
         sys.exit()
-        
-    def opError(self, operator):
-        print "Invalid operator for given type: " + str(operator)
+
+    def opError(self, type1, operator):
+        print "Invalid operator for " + type1 + ": " + str(operator)
+        sys.exit()
