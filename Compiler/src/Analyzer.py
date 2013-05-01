@@ -160,6 +160,14 @@ class Analyzer(object):
     def decrementSP(self, amount):
         self.output("SUB SP #"+str(amount)+" SP")
         
+    def initMainAR(self):
+        table = self.symbolTableStack.getCurrentTable()
+        self.incrementSP(4)
+        self.incrementSP(table.size)
+        self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
+        self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
+        
+        
     def finishProcOrFuncAR(self):
         table = self.symbolTableStack.getCurrentTable()
         #TODO: had to put in this if to get this to stop messing with if statements, hopefully its working for proc/fun/main, it seems to
@@ -167,9 +175,10 @@ class Analyzer(object):
             # only increment the runtime stack by the size of local variables, not params
             varSize = 0
             for entries in table.entries:
-                if entries["kind"] in ["var", "function"]:
+                if entries["kind"] == "var":
                     varSize += 1
-            self.incrementSP(varSize + 4)
+            if varSize > 0: # only add code if var's exist (optimization)
+                self.incrementSP(varSize)
 
             self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
             self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
@@ -181,9 +190,10 @@ class Analyzer(object):
         # only decrement the runtime stack by the size of local variables, not params
         varSize = 0
         for entries in table.entries:
-            if entries["kind"] in ["var", "function"]:
+            if entries["kind"] == "var":
                 varSize += 1
-        self.decrementSP(varSize + 4)
+        if varSize > 0: # only add code if var's exist (optimization)
+            self.decrementSP(varSize)
             
         if table.label == 1:
             self.output("HLT")

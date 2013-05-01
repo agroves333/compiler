@@ -1,16 +1,15 @@
-Program For_Loop;
-VAR i : Integer;
-BEGIN
-	writeln('Program: For_Loop');
-	writeln('1,2,3, Rock & the loop is working right');
+Program simple_PROC;
 
-	FOR i :=  1 TO 4 DO
-	BEGIN
-  		write(i);
-  		writeln(' O-Clock');
-	END;
-    
-writeln('ROCK!');
+Procedure do_it;
+    BEGIN
+        writeln('I should come second in order of execution');
+    END;
+
+BEGIN
+writeln('Simple procedure test - no arguments');
+
+writeln('I should first in order of execution');
+do_it;
 
 END
 .

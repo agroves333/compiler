@@ -269,6 +269,8 @@ class Parser(object):
     def compoundStatement(self):
         if self.lookahead is 'MP_BEGIN':  # 26 CompoundStatement -> "begin" StatementSequence "end"
             self.match('MP_BEGIN')
+            if self.symbolTableStack.getCurrentTable().name == "Main":
+                self.analyzer.initMainAR()
             self.analyzer.finishProcOrFuncAR()         
             self.statementSequence()
             self.match('MP_END')          
