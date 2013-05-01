@@ -33,7 +33,7 @@ class Analyzer(object):
     
     def genArithmetic(self, leftOp, operator, rightOp):
         opIR = ""
-        if (leftOp != None) and (rightOp != None):                
+        if (leftOp != None) and (rightOp != None):
             if leftOp["type"] == "Integer":
                 if rightOp["type"] == "Float":
                     # if int then float, pop float into temporary register,
@@ -87,7 +87,7 @@ class Analyzer(object):
                     opIR = "DIVSF"
                 else:
                     self.opError(operator)
-                    
+
             elif leftOp["type"] == "Boolean":
                 if leftOp["type"] == rightOp["type"]:
                     pass
@@ -149,15 +149,17 @@ class Analyzer(object):
         
     def finishProcOrFuncAR(self):
         table = self.symbolTableStack.getCurrentTable()
-        # only increment the runtime stack by the size of local variables, not params
-        varSize = 0
-        for entries in table.entries:
-            if entries["kind"] in ["var", "function"]:
-                varSize += 1
-        self.incrementSP(varSize + 4)
-            
-        self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
-        self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
+        #TODO: had to put in this if to get this to stop messing with if statements, hopefully its working for proc/fun/main, it seems to
+        if table.label == self.labelNumber: # Only runs this code if the begin is for proc/func/main, not if an if begin or something like that
+            # only increment the runtime stack by the size of local variables, not params
+            varSize = 0
+            for entries in table.entries:
+                if entries["kind"] in ["var", "function"]:
+                    varSize += 1
+            self.incrementSP(varSize + 4)
+
+            self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
+            self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
         
         
     def endProcOrFunc(self, table):
@@ -260,7 +262,7 @@ class Analyzer(object):
     
     def genBranchFalse(self, label):
         self.output("BRFS L" + str(label))
-        
+
     def genBranchTrue(self, label):
         self.output("BRTS L" + str(label))
         

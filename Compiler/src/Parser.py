@@ -438,10 +438,16 @@ class Parser(object):
             self.match('MP_IF')
             self.booleanExpression()
             self.analyzer.incrementLabel()
-            self.analyzer.genBranchFalse(self.analyzer.getLabel())
+            false_label_number = self.analyzer.getLabel()
+            self.analyzer.genBranchFalse(false_label_number)  # Generate branch to Optional Else if False
             self.match('MP_THEN')
             self.statement()
+            self.analyzer.incrementLabel()
+            skip_else_label_number = self.analyzer.getLabel()
+            self.analyzer.genBranch(skip_else_label_number) # Generate Branch past optional else if was inside of 'then'
+            self.analyzer.genLabel(false_label_number)
             self.optionalElsePart()
+            self.analyzer.genLabel(skip_else_label_number)
         else:
             self.error("if")
     
@@ -452,7 +458,6 @@ class Parser(object):
         #TODO: Table says else is ambiguous? haven't looked at it yet
         if self.lookahead is 'MP_ELSE':  # 52 OptionalElsePart -> "else" Statement
             self.match('MP_ELSE')
-            self.analyzer.genLabel(self.analyzer.getLabel())
             self.statement()
         elif self.lookahead in ['MP_SCOLON', 'MP_END', 'MP_UNTIL']:  # 53 OptionalElsePart -> lambda
             return
