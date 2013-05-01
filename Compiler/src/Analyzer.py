@@ -49,6 +49,9 @@ class Analyzer(object):
                         opIR = "MULSF"
                     elif operator["lexeme"] == "/":
                         opIR = "DIVSF"
+                    elif operator["lexeme"] == "div":
+                        opIR = "DIVSF" + "\n" + "CASTSI"    
+                        
                     else:
                         self.opError(leftOp["type"], operator["lexeme"])
                         
@@ -63,6 +66,8 @@ class Analyzer(object):
                         opIR = "DIVS"
                     elif operator["lexeme"] == "mod":
                         opIR = "MODS"
+                    elif operator["lexeme"] == "div":
+                        opIR = "DIVS" + "\n" + "CASTSI" 
                     else:
                         self.opError(leftOp["type"], operator["lexeme"])
                 else:
@@ -85,6 +90,8 @@ class Analyzer(object):
                     opIR = "MULSF"
                 elif operator["lexeme"] == "/":
                     opIR = "DIVSF"
+                elif operator["lexeme"] == "div":
+                    opIR = "DIVSF" + "\n" + "CASTSI"
                 else:
                     self.opError(leftOp["type"], operator["lexeme"])
                     
