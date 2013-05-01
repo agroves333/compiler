@@ -410,7 +410,8 @@ class Scanner(object):
                 if (nextChar in ['+', '-']):                        # if "+/-" , don't append to lexeme until digit is read in state 5
                     state = 5
                 elif (nextChar in self._digits):          # if digit is read, append "e" or "E" to the lexeme depending on what was read
-                    state = 6                             #    to get to state 4 (rewind sourceFile pointer by 2). This is possible b/c the only way
+                    state = 6            
+                    self.sourceFile.seek(-1, 1)                 #    to get to state 4 (rewind sourceFile pointer by 2). This is possible b/c the only way
                     self.col_internal -= 2                #    to get to state 4 is by reading an "e" or "E"
                     e = self.sourceFile.read(1)
                     self.col_internal += 1
