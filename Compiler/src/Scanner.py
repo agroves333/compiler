@@ -365,7 +365,7 @@ class Scanner(object):
                     state = 2
                 elif (nextChar in ["e", "E"]):                      # if "e" or "E" don't append to lexeme until digit is read in state 4
                     state = 4
-                    
+
                 else:
                     if nextChar:                                    # check if nextChar exist, if not, then the sourceFile pointer isn't rewound.
                         self.sourceFile.seek(-1, 1)  

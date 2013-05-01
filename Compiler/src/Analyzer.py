@@ -292,3 +292,4 @@ class Analyzer(object):
         
     def opError(self, operator):
         print "Invalid operator for given type: " + str(operator)
+        sys.exit()

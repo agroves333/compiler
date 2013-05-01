@@ -785,6 +785,7 @@ class Parser(object):
             
             termRec["type"] = self.factor()
             termRec = self.factorTail(termRec)
+            
             return termRec
 #             return self.mapTokenToType(self.lookahead)
         else:
