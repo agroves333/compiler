@@ -41,6 +41,8 @@ class Analyzer(object):
                     self.output("POP D9")
                     self.output("CASTSF")
                     self.output("PUSH D9")
+                    leftOp["type"] = "Float"
+                    
                     if operator["lexeme"] == "+":
                         opIR = "ADDSF"
                     elif operator["lexeme"] == "-":
@@ -77,6 +79,7 @@ class Analyzer(object):
             elif leftOp["type"] == "Float":
                 if rightOp["type"] == "Integer":
                     self.output("CASTSF")
+                    rightOp["type"] = "Float"
                 elif leftOp["type"] == rightOp["type"]:
                     pass
                 else:
