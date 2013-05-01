@@ -256,7 +256,7 @@ class Analyzer(object):
                 self.output("CMPNESF")
                 
         else:
-            self.invalidError(leftOp["type"])
+            self.opError(leftOp["type"], operator)
 
     def processId(self, id):
         for table in self.symbolTableStack.tables[::-1]: # Reverse tableStack to search from local to global scope
@@ -294,10 +294,6 @@ class Analyzer(object):
         
     def typeError(self, type1, type2): 
         print "Type mismatch error: " + str(type1) + " and " + str(type2)
-        sys.exit()
-        
-    def invalidError(self, type1):
-        print "Invalid type for the current operation: " +str(type1)
         sys.exit()
         
     def opError(self, type1, operator):
