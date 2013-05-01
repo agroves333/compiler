@@ -1,0 +1,49 @@
+ program Tester;
+
+ var I: Integer;
+  procedure countdown(a:integer); 
+  procedure f(x:integer);
+  procedure f2(x:integer);  
+  procedure f3(x:integer);  
+  procedure f4(x:integer);  
+  procedure f5(x:integer);  
+  procedure f6(x:integer);  
+  procedure f7(x:integer);
+  procedure f8(x:integer);
+  procedure f9(x:integer);
+  procedure f10(x:integer);
+  begin
+  end
+  begin
+  end
+  begin
+  end
+  begin
+  end
+  begin
+  end
+  begin
+  end
+  begin
+  end
+  begin
+  end
+  begin
+  end
+  begin
+  end
+  begin
+    if a < 0 then 
+    begin
+      writeln(': BLASTOFF')
+    end
+    else 
+      begin
+        writeln(a);
+        countdown(a-1)
+      end
+  end;
+
+  begin {tester}
+    countdown(10)
+  end. {tester}

@@ -1,0 +1,20 @@
+ program Tester;
+
+ var I: Integer;
+  procedure countdown(a);
+  begin
+    if a < 0 then
+    begin
+      writeln(': BLASTOFF')
+    end
+    else
+      begin
+        writeln(a);
+        countdown(a-1)
+      end
+  end;
+
+  begin {tester}
+    countdown(10)
+  end. {tester}
+

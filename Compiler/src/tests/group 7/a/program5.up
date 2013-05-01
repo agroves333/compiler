@@ -1,0 +1,14 @@
+program Program1;    
+  var N : Integer;
+  
+  procedure Fred(var N: integer);
+    begin
+	  read(N);
+	  Writeln(N);
+      N := N + 1;
+    end;
+    
+  begin     
+    Fred(N);
+    Writeln(N)
+  end.

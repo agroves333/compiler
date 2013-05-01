@@ -1,0 +1,17 @@
+program self;
+    var a, b, c : integer;
+    
+    function doStuff(a, b: integer) : integer;
+    begin
+        doStuff := doStuff;
+    end;
+begin
+    a := 1;
+    b := 2;
+    if (doStuff(a, b) < doStuff(b, a)) then
+    begin
+        Writeln('doStuff(a, b) < doStuff(b, a)');
+    end
+    else
+        Writeln('Other way');
+end.

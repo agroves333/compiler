@@ -1,0 +1,14 @@
+program bleh;
+Var a:integer;
+begin
+    a := 5;
+    repeat
+    begin
+      if a > 0  then
+        writeln('positive')
+      else
+        writeln('negative');
+      a := a+1
+    end
+    until a > 5
+end.

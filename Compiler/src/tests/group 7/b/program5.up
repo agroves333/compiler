@@ -1,0 +1,8 @@
+program Program4;
+  var A : integer;
+    begin
+    if(true) 
+      then
+        A := 1;
+        Write('A = ', A)
+    end.

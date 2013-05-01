@@ -1,0 +1,9 @@
+program hello;
+begin
+    WriteLn('Hello, World!');
+    WriteLn('How''re you?');
+    WriteLn('I''m\n\tFine!');
+    WriteLn('Single Slash: \ Double Slash: \\ Triple Slash \\\ Many Slashes \/\\//\\\///');
+    WriteLn('Slash Linebreak: \\n Double slash (random vtab: \v)tab: \\\tand just two slashes\\');
+    WriteLn('"That''s a lot of slashes!" -''Bob''');
+end.
