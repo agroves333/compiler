@@ -102,7 +102,7 @@ class Analyzer(object):
                     self.opError(operator)
                     
             else:
-                self.opError(operator)
+                self.opError(leftOp["type"], operator["lexeme"])
             
                 
         self.output(opIR)
@@ -293,5 +293,6 @@ class Analyzer(object):
         print "Invalid type for the current operation: " +str(type1)
         sys.exit()
         
-    def opError(self, operator):
-        print "Invalid operator for given type: " + str(operator)
+    def opError(self, type1, operator):
+        print "Invalid operator for " + type1 + ": " + str(operator)
+        sys.exit()
