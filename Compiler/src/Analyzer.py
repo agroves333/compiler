@@ -257,6 +257,15 @@ class Analyzer(object):
             elif operator == "<>":  # 76 RelationalOperator -> "<>"
                 self.output("CMPNESF")
                 
+        elif leftOp["type"] == "Boolean":
+            if rightOp["type"] == leftOp["type"]:
+                pass
+            else:
+                self.typeError(leftOp["type"], rightOp["type"])
+                
+            if operator == "=":  # 71 RelationalOperator -> "="
+                self.output("CMPEQS")
+                
         else:
             self.opError(leftOp["type"], operator)
 
