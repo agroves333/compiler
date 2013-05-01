@@ -100,6 +100,9 @@ class Analyzer(object):
                     opIR = "ORS"
                 else:
                     self.opError(operator)
+                    
+            else:
+                self.opError(operator)
             
                 
         self.output(opIR)
