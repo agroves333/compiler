@@ -50,7 +50,7 @@ class Analyzer(object):
                     elif operator["lexeme"] == "/":
                         opIR = "DIVSF"
                     else:
-                        self.opError(operator)
+                        self.opError(leftOp["type"], operator["lexeme"])
                         
                 elif leftOp["type"] == rightOp["type"]:
                     if operator["lexeme"] == "+":
@@ -64,7 +64,7 @@ class Analyzer(object):
                     elif operator["lexeme"] == "mod":
                         opIR = "MODS"
                     else:
-                        self.opError(operator)
+                        self.opError(leftOp["type"], operator["lexeme"])
                 else:
                     self.typeError(leftOp["type"], rightOp["type"])
 
@@ -86,7 +86,7 @@ class Analyzer(object):
                 elif operator["lexeme"] == "/":
                     opIR = "DIVSF"
                 else:
-                    self.opError(operator)
+                    self.opError(leftOp["type"], operator["lexeme"])
                     
             elif leftOp["type"] == "Boolean":
                 if leftOp["type"] == rightOp["type"]:
@@ -99,7 +99,7 @@ class Analyzer(object):
                 elif operator["lexeme"] == "or":
                     opIR = "ORS"
                 else:
-                    self.opError(operator)
+                    self.opError(leftOp["type"], operator["lexeme"])
                     
             else:
                 self.opError(leftOp["type"], operator["lexeme"])
