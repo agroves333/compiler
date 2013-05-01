@@ -180,7 +180,7 @@ class Analyzer(object):
         for entries in table.entries:
             if entries["kind"] in ["var", "function"]:
                 varSize += 1
-        self.output("SUB SP #"+str(varSize + 4)+" SP")
+        self.decrementSP(varSize + 4)
             
         if table.label == 1:
             self.output("HLT")
@@ -266,7 +266,7 @@ class Analyzer(object):
             if result != None:
                 result["nest"] = table.nest
                 return result
-            
+          
     def genForLoop(self, control, limit):              
         pass
     
