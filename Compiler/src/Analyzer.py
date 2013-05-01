@@ -256,7 +256,7 @@ class Analyzer(object):
                 self.output("CMPNESF")
                 
         else:
-            self.invalidError(leftOp["type"])
+            self.opError(leftOp["type"], operator)
 
     def processId(self, id):
         for table in self.symbolTableStack.tables[::-1]: # Reverse tableStack to search from local to global scope
