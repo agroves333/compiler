@@ -517,10 +517,10 @@ class Parser(object):
             self.finalValue()
             self.analyzer.genPushId(ident_rec)
             if(step == "to"):
-                self.analyzer.genBoolean(">", ident_rec, expression_rec)
+                self.analyzer.genBoolean(">=", ident_rec, expression_rec)
                 self.analyzer.genBranchFalse(self.analyzer.getLabel() + 1)
             elif(step == "downto"):
-                self.analyzer.genBoolean("<", ident_rec, expression_rec)
+                self.analyzer.genBoolean("<=", ident_rec, expression_rec)
                 self.analyzer.genBranchFalse(self.analyzer.getLabel() + 1)
             self.match('MP_DO')
             self.statement()
