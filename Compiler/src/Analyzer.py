@@ -264,7 +264,7 @@ class Analyzer(object):
                 self.typeError(leftOp["type"], rightOp["type"])
                 
             if operator == "=":  # 71 RelationalOperator -> "="
-                self.output("CMPEQSF")
+                self.output("CMPEQS")
                 
         else:
             self.opError(leftOp["type"], operator)
