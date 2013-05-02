@@ -382,17 +382,17 @@ class Parser(object):
             self.match('MP_WRITELN')
             self.match('MP_LPAREN')
             self.writeParameter('writeln')
-            self.writeParameterTail()            
+            self.writeParameterTail('writeln')            
             self.match('MP_RPAREN')
         else:
             self.error("write, writeln")
       
     
-    def writeParameterTail(self):
+    def writeParameterTail(self, kind):
         if self.lookahead is 'MP_COMMA':  # 46 WriteParameterTail -> "," WriteParameter
             self.match('MP_COMMA')
-            self.writeParameter()
-            self.writeParameterTail()
+            self.writeParameter(kind)
+            self.writeParameterTail(kind)
         elif self.lookahead is 'MP_RPAREN':  # 47 WriteParameterTail -> lambda
             return
         else:
