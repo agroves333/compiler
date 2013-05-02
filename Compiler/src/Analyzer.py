@@ -170,11 +170,11 @@ class Analyzer(object):
     def initMainAR(self):
         table = self.symbolTableStack.getCurrentTable()
         #TODO: had to put in this if to get this to stop messing with if statements, hopefully its working for proc/fun/main, it seems to
-        if table.label == self.labelNumber: # Only runs this code if the begin is for proc/func/main, not if an if begin or something like that
-            self.incrementSP(4)
-            self.incrementSP(table.size + 4)
-            self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
-            self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
+        #if table.label == self.labelNumber: # Only runs this code if the begin is for proc/func/main, not if an if begin or something like that
+        self.incrementSP(4)
+        self.incrementSP(table.size + 4)
+        self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
+        self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
         
         
     def finishProcOrFuncAR(self):
