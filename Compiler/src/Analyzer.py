@@ -139,10 +139,12 @@ class Analyzer(object):
     def genWriteln(self):
         self.output('WRT #"\\n"')
     
-    def genPushId(self, identRec):
+    def genPushId(self, identRec, isProc = False):
         entry = self.processId(identRec["lexeme"])
         nest = entry["nest"]
         offset = entry["offset"]
+        if isProc:
+            offset -= 1
         self.output("PUSH "+str(offset)+"(D"+str(nest)+")")
         resultRec = entry["type"]
         return resultRec
