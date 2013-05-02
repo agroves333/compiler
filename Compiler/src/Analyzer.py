@@ -171,7 +171,7 @@ class Analyzer(object):
         if table.label == self.labelNumber: # Only runs this code if the begin is for proc/func/main, not if an if begin or something like that
             self.incrementSP(4)
             self.incrementSP(table.size)
-            self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
+            self.output("MOV D" +str(table.nest)+ " -" +str(table.size) +"(SP)")
             self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
         
         
@@ -187,7 +187,7 @@ class Analyzer(object):
             if varSize > 0: # only add code if var's exist (optimization)
                 self.incrementSP(varSize)
 
-            self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
+            self.output("MOV D" +str(table.nest)+ " -" +str(table.size) +"(SP)")
             self.output("SUB SP #" +str(table.size) +" D"+str(table.nest))
         
         
