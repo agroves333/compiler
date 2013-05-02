@@ -34,6 +34,7 @@ class SymbolTableStack(object):
     def getParamCount(name):
         for table in SymbolTableStack.tables:
             if (table.name == name):
+                
                 return table.paramCount
 
 class SymbolTable(object):

@@ -862,7 +862,7 @@ class Parser(object):
                 
                 if entry != None:
                     self.analyzer.genCall(entry['label'])
-                    self.analyzer.popDisplayAndParams(id)
+#                     self.analyzer.popDisplayAndParams(id)
                 else:
                     print "Error: "+id+" not found. It either doesn't exist or out of scope."
                     sys.exit()
