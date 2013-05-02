@@ -473,13 +473,12 @@ class Parser(object):
         if self.lookahead is 'MP_REPEAT':  # 54 RepeatStatement -> "repeat" StatementSequence "until" BooleanExpression
             self.match('MP_REPEAT')
             self.analyzer.incrementLabel()
-            self.analyzer.genLabel(self.analyzer.getLabel())
+            starting_label = self.analyzer.getLabel()
+            self.analyzer.genLabel(starting_label)
             self.statementSequence()
             self.match('MP_UNTIL')
             self.booleanExpression()
-            self.analyzer.genBranchTrue(self.analyzer.getLabel() + 1)
-            self.analyzer.genBranch(self.analyzer.getLabel())
-            self.analyzer.genLabel(self.analyzer.getLabel() + 1)
+            self.analyzer.genBranchFalse(starting_label)
         else:
             self.error("repeat")
             
@@ -489,14 +488,16 @@ class Parser(object):
         if self.lookahead is 'MP_WHILE':  # 55 WhileStatement -> "while" BooleanExpression "do" Statement
             self.match('MP_WHILE')
             self.analyzer.incrementLabel()
-            self.analyzer.genLabel(self.analyzer.getLabel())
+            start_label = self.analyzer.getLabel()
+            self.analyzer.genLabel(start_label)
             self.booleanExpression()
-            self.analyzer.genBranchFalse(self.analyzer.getLabel() + 1)
+            self.analyzer.incrementLabel()
+            false_label = self.analyzer.getLabel()
+            self.analyzer.genBranchFalse(false_label)
             self.match('MP_DO')
             self.statement()
-            self.analyzer.genBranch(self.analyzer.getLabel())
-            self.analyzer.incrementLabel()
-            self.analyzer.genLabel(self.analyzer.getLabel())
+            self.analyzer.genBranch(start_label)
+            self.analyzer.genLabel(false_label)
         else:
             self.error("while")
             
@@ -514,15 +515,18 @@ class Parser(object):
             self.analyzer.genAssign(ident_rec, expression_rec)
             step = self.stepValue()
             self.analyzer.incrementLabel()
-            self.analyzer.genLabel(self.analyzer.getLabel())
+            start_label = self.analyzer.getLabel()
+            self.analyzer.incrementLabel()
+            false_label = self.analyzer.getLabel()
+            self.analyzer.genLabel(start_label)
             self.finalValue()
             self.analyzer.genPushId(ident_rec)
             if(step == "to"):
                 self.analyzer.genBoolean(">=", ident_rec, expression_rec)
-                self.analyzer.genBranchFalse(self.analyzer.getLabel() + 1)
+                self.analyzer.genBranchFalse(false_label)
             elif(step == "downto"):
                 self.analyzer.genBoolean("<=", ident_rec, expression_rec)
-                self.analyzer.genBranchFalse(self.analyzer.getLabel() + 1)
+                self.analyzer.genBranchFalse(false_label)
             self.match('MP_DO')
             self.statement()
             if(step == "to"):
@@ -532,9 +536,8 @@ class Parser(object):
             self.analyzer.genPushId(ident_rec)
             self.analyzer.output("ADDS")
             self.analyzer.genAssign(ident_rec, expression_rec)
-            self.analyzer.genBranch(self.analyzer.getLabel())
-            self.analyzer.incrementLabel()
-            self.analyzer.genLabel(self.analyzer.getLabel())
+            self.analyzer.genBranch(start_label)
+            self.analyzer.genLabel(false_label)
         else:
             self.error("for")
             
