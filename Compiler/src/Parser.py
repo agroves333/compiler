@@ -62,6 +62,7 @@ class Parser(object):
             self.match("MP_PROGRAM")
             self.programIdentifier()
             self.symbolTableStack.addTable('Main', self.analyzer.getLabel())
+            self.analyzer.initMainAR()
             self.analyzer.genBranch(self.analyzer.getLabel())
         else:
             self.error("MP_PROGRAM")
@@ -269,8 +270,8 @@ class Parser(object):
     def compoundStatement(self):
         if self.lookahead is 'MP_BEGIN':  # 26 CompoundStatement -> "begin" StatementSequence "end"
             self.match('MP_BEGIN')
-            if self.symbolTableStack.getCurrentTable().name == "Main":
-                self.analyzer.initMainAR()
+            #if self.symbolTableStack.getCurrentTable().label == "Main":
+                #self.analyzer.initMainAR()
             self.analyzer.finishProcOrFuncAR()         
             self.statementSequence()
             self.match('MP_END')          
