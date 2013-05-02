@@ -172,7 +172,7 @@ class Analyzer(object):
             self.incrementSP(4)
             self.incrementSP(table.size)
             self.output("MOV D" +str(table.nest)+ " -" +str(table.size) +"(SP)")
-            self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
+            self.output("SUB SP #" +str(table.size) +" D"+str(table.nest))
         
         
     def finishProcOrFuncAR(self):
