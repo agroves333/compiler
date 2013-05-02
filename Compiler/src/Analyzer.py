@@ -170,9 +170,9 @@ class Analyzer(object):
         #TODO: had to put in this if to get this to stop messing with if statements, hopefully its working for proc/fun/main, it seems to
         if table.label == self.labelNumber: # Only runs this code if the begin is for proc/func/main, not if an if begin or something like that
             self.incrementSP(4)
-            self.incrementSP(table.size)
-            self.output("MOV D" +str(table.nest)+ " -" +str(table.size) +"(SP)")
-            self.output("SUB SP #" +str(table.size) +" D"+str(table.nest))
+            self.incrementSP(table.size + 4)
+            self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
+            self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
         
         
     def finishProcOrFuncAR(self):
@@ -187,12 +187,12 @@ class Analyzer(object):
             if varSize > 0: # only add code if var's exist (optimization)
                 self.incrementSP(varSize)
 
-            self.output("MOV D" +str(table.nest)+ " -" +str(table.size) +"(SP)")
-            self.output("SUB SP #" +str(table.size) +" D"+str(table.nest))
+            self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
+            self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
         
         
     def endProcOrFunc(self, table):
-        self.output("MOV -" +str(table.size) +"(SP) D" +str(table.nest))
+        self.output("MOV -" +str(table.size + 4) +"(SP) D" +str(table.nest))
         
         # only decrement the runtime stack by the size of local variables, not params
         varSize = 0
