@@ -864,7 +864,6 @@ class Parser(object):
                 else:
                     print "Error: "+id+" not found. It either doesn't exist or out of scope."
                     sys.exit()
-                
             elif id_kind in ["var", "iparam", "dparam"]:
                 id = self.variableIdentifier()
                 identRec["lexeme"] = id

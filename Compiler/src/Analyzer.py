@@ -188,7 +188,7 @@ class Analyzer(object):
                     varSize += 1
             if varSize > 0: # only add code if var's exist (optimization)
                 self.incrementSP(varSize)
-
+            self.incrementSP(table.size)
             self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
             self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
         
