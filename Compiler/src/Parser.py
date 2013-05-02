@@ -857,13 +857,14 @@ class Parser(object):
             if id_kind == "function":
                 self.analyzer.incrementSP(4) # leave space for function/procedure's display register
                 id = self.functionIdentifier()
+                self.optionalActualParameterList()
                 entry = self.symbolTableStack.getCurrentTable().find(id)
                 if entry != None:
                     self.analyzer.genCall(entry['label'])
                 else:
                     print "Error: "+id+" not found. It either doesn't exist or out of scope."
                     sys.exit()
-                self.optionalActualParameterList()
+                
             elif id_kind in ["var", "iparam", "dparam"]:
                 id = self.variableIdentifier()
                 identRec["lexeme"] = id
