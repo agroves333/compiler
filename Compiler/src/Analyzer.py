@@ -65,11 +65,16 @@ class Analyzer(object):
                     elif operator["lexeme"] == "*":
                         opIR = "MULS"
                     elif operator["lexeme"] == "/":
-                        opIR = "DIVS"
+                        self.output("POP D9")
+                        self.output("CASTSF")
+                        self.output("PUSH D9")
+                        self.output("CASTSF")
+                        leftOp["type"] = "Float"
+                        opIR = "DIVSF"
                     elif operator["lexeme"] == "mod":
                         opIR = "MODS"
                     elif operator["lexeme"] == "div":
-                        opIR = "DIVS" + "\n" + "CASTSI" 
+                        opIR = "DIVS" 
                     else:
                         self.opError(leftOp["type"], operator["lexeme"])
                 else:
