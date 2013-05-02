@@ -235,7 +235,7 @@ class Parser(object):
             self.match('MP_COLON')
             varType = self.type()
             for name in identList:
-                self.symbolTableStack.getCurrentTable().insertEntry(name, 'param', varType, '', self.firstIdFlag)
+                self.symbolTableStack.getCurrentTable().insertEntry(name, 'dparam', varType, '', self.firstIdFlag)
                 self.firstIdFlag = False
         else:
             self.error("Identifier")
@@ -249,7 +249,7 @@ class Parser(object):
             self.match('MP_COLON')
             varType = self.type()
             for name in identList:
-                self.symbolTableStack.getCurrentTable().insertEntry(name, 'param', varType, '', self.firstIdFlag)
+                self.symbolTableStack.getCurrentTable().insertEntry(name, 'iparam', varType, '', self.firstIdFlag)
                 self.firstIdFlag = False
         else:
             self.error("Var")
@@ -854,7 +854,7 @@ class Parser(object):
                 self.analyzer.incrementSP(4) # leave space for function/procedure's display register
                 id = self.functionIdentifier()
                 self.optionalActualParameterList()
-            elif id_kind in ["var", "param"]:
+            elif id_kind in ["var", "iparam", "dparam"]:
                 id = self.variableIdentifier()
                 
                 identRec["lexeme"] = id

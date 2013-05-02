@@ -188,11 +188,11 @@ class Analyzer(object):
                 self.incrementSP(varSize)
 
             self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
-            self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
+            self.output("SUB SP #" +str(table.size) +" D"+str(table.nest))
         
         
     def endProcOrFunc(self, table):
-        self.output("MOV -" +str(table.size + 4) +"(SP) D" +str(table.nest))
+        self.output("MOV -" +str(table.size) +"(SP) D" +str(table.nest))
         
         # only decrement the runtime stack by the size of local variables, not params
         varSize = 0
