@@ -9,9 +9,8 @@ import sys
 
 class SymbolTableStack(object):
 
-    def __init__(self):
-        self.tables = []
-
+    tables = []
+    
     def addTable(self, name, label):
         nest = len(self.tables)
         next = self.getCurrentTable().name if len(self.tables) > 0 else None
@@ -31,17 +30,22 @@ class SymbolTableStack(object):
             for entry in table.entries:
                 if entry["name"] == name:
                     entry["type"] = type
-                    
-
+    @staticmethod                
+    def getParamCount(name):
+        for table in SymbolTableStack.tables:
+            for entry in table.entries:
+                if (entry["name"] == name) and (entry["kind"] in ["function", "procedure"]):
+                    return entry["paramCount"]
 
 class SymbolTable(object):
-
+    
     def __init__(self, name, nest, next, label):
         self.name = name
         self.nest = nest
         self.size = 0
         self.next = next
         self.label = label
+        self.paramCount = 0
         self.entries = []
 
 
@@ -55,14 +59,16 @@ class SymbolTable(object):
         else:
             size = 0
 
+        if kind in ['iparam', 'dparam']:
+            self.paramCount += 1
         
         if self.find(name) is None:
-            self.entries.append({"name":name, "kind":kind, "type":type, "size":size, "offset":offset, "label":label})
+            self.entries.append({"name":name, "kind":kind, "type":type, "size":size, "offset":offset, "label":label, "paramCount":SymbolTableStack.getParamCount(name) if SymbolTableStack.getParamCount(name) != None else 0})
         else:
             print "ERROR: Already have something named " + name + ".  Cannot declare another " + name + "."
             sys.exit()
     
-    
+
         
     def setNext(self, next):
         self.next = next
@@ -75,7 +81,7 @@ class SymbolTable(object):
 
     def printTable(self):
         print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
-        print '{0:<1s} {1:10s} {2:10s} {3:<10s} {4:32s} {0:>1s}'.format('|', self.name +"   L"+ str(self.label), 'Nest: '+ str(self.nest), 'Size: '+ str(self.size), 'Next-> '+ str(self.next))
+        print '{0:<1s} {1:10s} {2:10s} {3:<10s} {4:15s} {5:16s} {0:>1s}'.format('|', self.name +"   L"+ str(self.label), 'Nest: '+ str(self.nest), 'Size: '+ str(self.size), 'Next-> '+ str(self.next), "#Params" +str(self.paramCount))
         print '{0:1s}{1:=<67}{0:1s}'.format('+', '=')
         print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:10s} {5:10s} {6:10s} {0:<1s}'.format('|', 'Name', 'Kind', 'Type', 'Size', 'Offset', 'Label')
         print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')

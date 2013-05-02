@@ -176,7 +176,11 @@ class Analyzer(object):
         self.output("MOV D" +str(table.nest)+ " -" +str(table.size + 4) +"(SP)")
         self.output("SUB SP #" +str(table.size + 4) +" D"+str(table.nest))
         
-        
+    def popDisplayAndParams(self, name):
+        entry = self.symbolTableStack.getCurrentTable().find(name)
+        paramCount = entry[name] if (entry[name] in entry) else 0
+        self.output("SUB SP #" +str(paramCount + 4) +" SP")
+      
     def finishProcOrFuncAR(self):
         table = self.symbolTableStack.getCurrentTable()
         #TODO: had to put in this if to get this to stop messing with if statements, hopefully its working for proc/fun/main, it seems to

@@ -859,8 +859,10 @@ class Parser(object):
                 id = self.functionIdentifier()
                 self.optionalActualParameterList()
                 entry = self.symbolTableStack.getCurrentTable().find(id)
+                
                 if entry != None:
                     self.analyzer.genCall(entry['label'])
+                    self.analyzer.popDisplayAndParams(id)
                 else:
                     print "Error: "+id+" not found. It either doesn't exist or out of scope."
                     sys.exit()
