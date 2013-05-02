@@ -868,10 +868,7 @@ class Parser(object):
             elif id_kind in ["var", "iparam", "dparam"]:
                 id = self.variableIdentifier()
                 identRec["lexeme"] = id
-                if id_kind in ["var"]:
-                    self.analyzer.genPushId(identRec, False)
-                else:
-                    self.analyzer.genPushId(identRec, True)
+                self.analyzer.genPushId(identRec)
                 
             return self.analyzer.processId(id)["type"]
         

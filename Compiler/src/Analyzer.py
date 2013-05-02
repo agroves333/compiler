@@ -27,8 +27,8 @@ class Analyzer(object):
                 self.output("CASTSF")
             else:
                 self.typeError(id_type, exp_type)
-            
-            self.output('POP ' + str(offset) + '(D' + str(nest) +')')
+            if ident_rec['kind'] != "function":
+                self.output('POP ' + str(offset) + '(D' + str(nest) +')')
 
     
     def genArithmetic(self, leftOp, operator, rightOp):
@@ -143,8 +143,7 @@ class Analyzer(object):
         entry = self.processId(identRec["lexeme"])
         nest = entry["nest"]
         offset = entry["offset"]
-        if isProc:
-            offset -= 1
+        
         self.output("PUSH "+str(offset)+"(D"+str(nest)+")")
         resultRec = entry["type"]
         return resultRec
