@@ -33,9 +33,8 @@ class SymbolTableStack(object):
     @staticmethod                
     def getParamCount(name):
         for table in SymbolTableStack.tables:
-            for entry in table.entries:
-                if (entry["name"] == name) and (entry["kind"] in ["function", "procedure"]):
-                    return entry["paramCount"]
+            if (table.name == name):
+                return table.paramCount
 
 class SymbolTable(object):
     
@@ -61,9 +60,9 @@ class SymbolTable(object):
 
         if kind in ['iparam', 'dparam']:
             self.paramCount += 1
-        
+            
         if self.find(name) is None:
-            self.entries.append({"name":name, "kind":kind, "type":type, "size":size, "offset":offset, "label":label, "paramCount":SymbolTableStack.getParamCount(name) if SymbolTableStack.getParamCount(name) != None else 0})
+            self.entries.append({"name":name, "kind":kind, "type":type, "size":size, "offset":offset, "label":label, "paramCount":SymbolTableStack.getParamCount(name) if (kind in ["function", "procedure"]) else 0})
         else:
             print "ERROR: Already have something named " + name + ".  Cannot declare another " + name + "."
             sys.exit()
@@ -87,5 +86,5 @@ class SymbolTable(object):
         print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')
         
         for entry in self.entries:
-            print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:<10d} {5:<10d} {6:10s} {0:<1s}'.format('|', entry['name'], entry['kind'], entry['type'], entry['size'], entry['offset'], "L"+str(entry['label']) if entry['label'] != "" else "")
+            print '{0:<1s} {1:10s} {2:10s} {3:10s} {4:<10d} {5:<10d} {6:10s} {7:10s} {0:<1s}'.format('|', entry['name'], entry['kind'], entry['type'], entry['size'], entry['offset'], "L"+str(entry['label']) if entry['label'] != "" else "", "pCount "+str(entry["paramCount"]))
         print '{0:1s}{1:-<67}{0:1s}'.format('+', '-')+"\n"

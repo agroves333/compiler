@@ -178,7 +178,7 @@ class Analyzer(object):
         
     def popDisplayAndParams(self, name):
         entry = self.symbolTableStack.getCurrentTable().find(name)
-        paramCount = entry[name] if (entry[name] in entry) else 0
+        paramCount = entry['paramCount']
         self.output("SUB SP #" +str(paramCount + 4) +" SP")
       
     def finishProcOrFuncAR(self):
