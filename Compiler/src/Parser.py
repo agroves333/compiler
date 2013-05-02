@@ -861,8 +861,8 @@ class Parser(object):
                 if entry != None:
                     self.analyzer.genCall(entry['label'])
                 else:
-                    print "Error: "+procedureName+" not found. It either doesn't exist or out of scope."
-                sys.exit()
+                    print "Error: "+id+" not found. It either doesn't exist or out of scope."
+                    sys.exit()
                 self.optionalActualParameterList()
             elif id_kind in ["var", "iparam", "dparam"]:
                 id = self.variableIdentifier()
