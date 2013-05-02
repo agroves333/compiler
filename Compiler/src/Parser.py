@@ -375,15 +375,14 @@ class Parser(object):
         if self.lookahead is 'MP_WRITE':  # 45 WriteStatement -> "write" "(" WriteParameter WriteParameterTail ")"
             self.match('MP_WRITE')
             self.match('MP_LPAREN')
-            self.writeParameter()
+            self.writeParameter(None)
             self.writeParameterTail()          
             self.match('MP_RPAREN')
         elif self.lookahead is 'MP_WRITELN': # 111 WriteStatement -> writeln "(" WriteParameter WriteParameterTail ")"
             self.match('MP_WRITELN')
             self.match('MP_LPAREN')
-            self.writeParameter()
-            self.writeParameterTail()
-            self.analyzer.genWriteln()
+            self.writeParameter('writeln')
+            self.writeParameterTail()            
             self.match('MP_RPAREN')
         else:
             self.error("write, writeln")
@@ -400,7 +399,7 @@ class Parser(object):
             self.error("comma, )")
     
     
-    def writeParameter(self):
+    def writeParameter(self, kind):
         if self.lookahead in ['MP_LPAREN', 'MP_IDENTIFIER',  # 48 WriteParameter -> OrdinalExpression
                               'MP_PLUS', 'MP_MINUS',
                               'MP_FLOAT_LIT', 'MP_FIXED_LIT', 'MP_STRING_LIT',
@@ -408,6 +407,8 @@ class Parser(object):
                               'MP_TRUE', 'MP_FALSE']:
             self.ordinalExpression()
             self.analyzer.genWrite()
+            if kind == 'writeln':
+                self.analyzer.genWriteln()
         else:
             self.error("(, identifier, +, -, any literal value, not")
     
