@@ -1,15 +1,37 @@
-Program simple_PROC;
+{
+input:25
+26
+27
+28
+26
+}
 
-Procedure do_it;
-    BEGIN
-        writeln('I should come second in order of execution');
-    END;
+program test;
 
-BEGIN
-writeln('Simple procedure test - no arguments');
+var x:integer; y:integer;
 
-writeln('I should first in order of execution');
-do_it;
+function f_one(a:integer):integer;
+ begin
+ a := a+1;
+ writeln(a);
+ f_one := a;
+ end;
 
-END
-.
+function f_two(var c:integer):integer;
+ begin
+ read(c);
+ c := c+1;
+ writeln(c);
+ f_two := c;
+ end;
+
+begin
+  y := 20;
+
+  y := f_two(x);
+  y := f_one(y);
+
+  writeln(y+1);
+  writeln(-12+x+12);
+
+end.

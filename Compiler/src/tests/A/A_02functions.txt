@@ -28,10 +28,7 @@ function f_two(var c:integer):integer;
 begin
   y := 20;
 
-  y := f_two(x);
   y := f_one(y);
 
-  writeln(y+1);
-  writeln(-12+x+12);
 
 end.
