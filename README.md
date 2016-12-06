@@ -1,4 +1,4 @@
-# compiler
+# µPascal Compiler
 
 Capstone project for Montana State University's Compilers course.
 
